@@ -1,0 +1,65 @@
+{
+  "model_type": "RandomForestClassifier",
+  "trained_at": "2026-02-20T14:25:24.295205",
+  "dataset": "Final_Augmented_dataset_Diseases_and_Symptoms.csv",
+  "dataset_stats": {
+    "total_samples": 246823,
+    "train_samples": 197458,
+    "test_samples": 49365,
+    "n_features": 377,
+    "n_classes": 721
+  },
+  "hyperparameters": {
+    "n_estimators": 150,
+    "max_depth": 20,
+    "min_samples_split": 5,
+    "class_weight": "balanced"
+  },
+  "metrics": {
+    "top1_accuracy": 0.6871467639015497,
+    "top3_accuracy": 0.7900536817583308,
+    "top5_accuracy": 0.8266990782943381
+  },
+  "top_features": [
+    {
+      "symptom": "cough",
+      "importance": 0.021096955075342705
+    },
+    {
+      "symptom": "shortness of breath",
+      "importance": 0.018822727000206624
+    },
+    {
+      "symptom": "sharp abdominal pain",
+      "importance": 0.014716103367756575
+    },
+    {
+      "symptom": "emotional symptoms",
+      "importance": 0.014663067862326358
+    },
+    {
+      "symptom": "depressive or psychotic symptoms",
+      "importance": 0.014369830128772654
+    },
+    {
+      "symptom": "sharp chest pain",
+      "importance": 0.013238044350279893
+    },
+    {
+      "symptom": "dizziness",
+      "importance": 0.012800472191153277
+    },
+    {
+      "symptom": "vomiting",
+      "importance": 0.01189004124176404
+    },
+    {
+      "symptom": "headache",
+      "importance": 0.011284837330598853
+    },
+    {
+      "symptom": "hot flashes",
+      "importance": 0.010068955057122306
+    }
+  ]
+}

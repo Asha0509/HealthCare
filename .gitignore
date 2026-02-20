@@ -44,3 +44,7 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Large dataset files
+Final_Augmented_dataset_Diseases_and_Symptoms.csv
+models/models/*.pkl

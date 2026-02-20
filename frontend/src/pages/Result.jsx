@@ -6,8 +6,17 @@ import {
 } from 'recharts'
 import {
     AlertTriangle, CheckCircle, Clock, Phone, MapPin,
-    Heart, Salad, ArrowLeft, ExternalLink, Info
+    Heart, Salad, ArrowLeft, ExternalLink, Info, Database
 } from 'lucide-react'
+
+// Dataset Model Info
+const MODEL_INFO = {
+    dataset: 'Medical Symptoms-Diseases Dataset',
+    samples: '246,945',
+    features: '377 symptoms',
+    classes: '721 diseases',
+    accuracy: '82.67%'
+}
 
 const URGENCY_CONFIG = {
     Emergency: {
@@ -210,6 +219,24 @@ export default function Result() {
                                 </div>
                             </div>
                             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>AI Confidence</p>
+                            
+                            {/* Data Source Badge */}
+                            <div style={{
+                                marginTop: 12,
+                                padding: '8px 12px',
+                                background: 'rgba(0,212,170,0.08)',
+                                border: '1px solid rgba(0,212,170,0.2)',
+                                borderRadius: 8,
+                                fontSize: '0.7rem'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+                                    <Database size={12} color="var(--accent-teal)" />
+                                    <span style={{ color: 'var(--accent-teal)', fontWeight: 600 }}>ML Model</span>
+                                </div>
+                                <div style={{ color: 'var(--text-muted)', marginTop: 4 }}>
+                                    {MODEL_INFO.samples} samples
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -356,6 +383,38 @@ export default function Result() {
                             </div>
                         </div>
                     )}
+                </div>
+
+                {/* Data Source Info */}
+                <div className="glass-card" style={{
+                    marginTop: 24,
+                    padding: '20px 24px',
+                    background: 'linear-gradient(135deg, rgba(0,212,170,0.04) 0%, rgba(59,130,246,0.04) 100%)',
+                    border: '1px solid rgba(0,212,170,0.12)'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <Database size={18} color="var(--accent-teal)" />
+                            <div>
+                                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                                    Prediction Source: {MODEL_INFO.dataset}
+                                </div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>
+                                    Trained on {MODEL_INFO.samples} medical records • {MODEL_INFO.features} • {MODEL_INFO.classes}
+                                </div>
+                            </div>
+                        </div>
+                        <div style={{
+                            padding: '6px 12px',
+                            background: 'rgba(0,212,170,0.1)',
+                            borderRadius: 6,
+                            fontSize: '0.75rem',
+                            color: 'var(--accent-teal)',
+                            fontWeight: 600
+                        }}>
+                            Top-5 Accuracy: {MODEL_INFO.accuracy}
+                        </div>
+                    </div>
                 </div>
 
                 {/* Disclaimer */}

@@ -6,6 +6,52 @@ An AI-powered healthcare triage system that uses Google's Gemini API for intelli
 
 ---
 
+## 📊 Dataset & ML Model
+
+### Medical Symptoms-Diseases Dataset
+This project includes a comprehensive medical dataset for disease prediction:
+
+| Metric | Value |
+|---|---|
+| **Total Samples** | 246,945 |
+| **Symptom Features** | 377 |
+| **Disease Classes** | 721 |
+| **Dataset File** | `Final_Augmented_dataset_Diseases_and_Symptoms.csv` |
+
+### Trained ML Model
+A Random Forest classifier trained on the dataset:
+
+| Metric | Value |
+|---|---|
+| **Model Type** | Random Forest Classifier |
+| **Training Samples** | 197,458 |
+| **Test Samples** | 49,365 |
+| **Top-1 Accuracy** | 68.71% |
+| **Top-3 Accuracy** | 79.01% |
+| **Top-5 Accuracy** | 82.67% |
+
+**Top Predictive Symptoms:**
+1. Cough (2.1%)
+2. Shortness of breath (1.9%)
+3. Sharp abdominal pain (1.5%)
+4. Emotional symptoms (1.5%)
+5. Depressive/psychotic symptoms (1.4%)
+
+### Training the Model
+
+```bash
+cd Health
+python models/disease_classifier.py
+```
+
+**Output files** (saved to `models/models/`):
+- `disease_model.pkl` - Trained Random Forest model
+- `disease_label_encoder.pkl` - Label encoder for diseases
+- `symptom_columns.json` - Feature column names
+- `disease_model_metadata.json` - Training metadata & metrics
+
+---
+
 ## 🧠 Tech Stack
 
 | Layer | Technology |
@@ -13,6 +59,7 @@ An AI-powered healthcare triage system that uses Google's Gemini API for intelli
 | Frontend | React 18 + Vite |
 | Backend | FastAPI, Pydantic, Uvicorn |
 | AI/NLP | Google Gemini 2.0 Flash API |
+| ML Model | Random Forest (scikit-learn) |
 | Database | SQLite (aiosqlite) |
 | Sessions | In-memory storage |
 
@@ -65,6 +112,7 @@ npm run dev
 
 ```
 Health/
+├── Final_Augmented_dataset_Diseases_and_Symptoms.csv  # Medical dataset (246K samples)
 ├── backend/
 │   ├── main.py                    # FastAPI entry point
 │   ├── .env                       # GEMINI_API_KEY goes here
@@ -88,7 +136,15 @@ Health/
 ├── data/
 │   └── symptom_disease_graph.json # Knowledge graph
 └── models/
-    └── train_classifier.py        # Optional: XGBoost training
+    ├── train_classifier.py        # XGBoost triage classifier training
+    ├── disease_classifier.py      # Disease prediction model training
+    └── models/
+        ├── disease_model.pkl              # Trained Random Forest model
+        ├── disease_label_encoder.pkl      # Disease label encoder
+        ├── symptom_columns.json           # 377 symptom feature names
+        ├── disease_model_metadata.json    # Training metrics & config
+        ├── triage_xgb.pkl                 # XGBoost triage model
+        └── feature_columns.json           # Triage feature columns
 ```
 
 ---

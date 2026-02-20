@@ -1,5 +1,15 @@
 import { Link } from 'react-router-dom'
-import { Activity, Shield, Brain, Zap, Heart, ChevronRight, AlertTriangle } from 'lucide-react'
+import { Activity, Shield, Brain, Zap, Heart, ChevronRight, AlertTriangle, Database, Layers, BarChart3 } from 'lucide-react'
+
+// Dataset & Model Statistics
+const DATASET_STATS = {
+    samples: '246,945',
+    symptoms: '377',
+    diseases: '721',
+    accuracy: '82.67%',
+    modelType: 'Random Forest',
+    trainingDate: 'Feb 2026'
+}
 
 const FEATURES = [
     { icon: Brain, title: 'Medical NLP Engine', desc: 'Extracts symptoms, severity, and duration from natural language with clinical-grade accuracy.' },
@@ -57,10 +67,10 @@ export default function Landing() {
                     {/* Floating stats */}
                     <div style={{ display: 'flex', gap: 24, justifyContent: 'center', marginTop: 64, flexWrap: 'wrap' }}>
                         {[
-                            { label: 'Symptom Clusters', value: '50+' },
-                            { label: 'Red-Flag Rules', value: '15+' },
-                            { label: 'Classification Accuracy', value: '94%' },
-                            { label: 'Avg Response Time', value: '<2s' },
+                            { label: 'Training Samples', value: DATASET_STATS.samples },
+                            { label: 'Symptom Features', value: DATASET_STATS.symptoms },
+                            { label: 'Disease Classes', value: DATASET_STATS.diseases },
+                            { label: 'Top-5 Accuracy', value: DATASET_STATS.accuracy },
                         ].map(s => (
                             <div key={s.label} className="glass-card" style={{ padding: '20px 32px', textAlign: 'center', minWidth: 130 }}>
                                 <div style={{
@@ -135,6 +145,69 @@ export default function Landing() {
             {/* ── Disclaimer ── */}
             <section style={{ padding: '60px 0' }}>
                 <div className="container">
+                    {/* Dataset & Model Info Banner */}
+                    <div className="glass-card" style={{ 
+                        padding: 32, 
+                        marginBottom: 32, 
+                        background: 'linear-gradient(135deg, rgba(0,212,170,0.05) 0%, rgba(59,130,246,0.05) 100%)',
+                        border: '1px solid rgba(0,212,170,0.15)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+                            <div style={{
+                                width: 40, height: 40, borderRadius: 10,
+                                background: 'var(--accent-teal-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}>
+                                <Database size={20} color="var(--accent-teal)" />
+                            </div>
+                            <h3 style={{ margin: 0 }}>Powered by Medical Dataset</h3>
+                        </div>
+                        
+                        <div style={{ 
+                            display: 'grid', 
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
+                            gap: 20 
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <Layers size={18} color="var(--accent-teal)" />
+                                <div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Dataset</div>
+                                    <div style={{ fontWeight: 600 }}>Augmented Symptoms-Diseases</div>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <BarChart3 size={18} color="var(--accent-teal)" />
+                                <div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Model</div>
+                                    <div style={{ fontWeight: 600 }}>{DATASET_STATS.modelType} Classifier</div>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <Brain size={18} color="var(--accent-teal)" />
+                                <div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Training Data</div>
+                                    <div style={{ fontWeight: 600 }}>{DATASET_STATS.samples} samples</div>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <Activity size={18} color="var(--accent-teal)" />
+                                <div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Prediction Accuracy</div>
+                                    <div style={{ fontWeight: 600 }}>{DATASET_STATS.accuracy} (Top-5)</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style={{ 
+                            marginTop: 20, 
+                            paddingTop: 16, 
+                            borderTop: '1px solid rgba(255,255,255,0.06)',
+                            fontSize: '0.8rem',
+                            color: 'var(--text-muted)'
+                        }}>
+                            <strong style={{ color: 'var(--text-secondary)' }}>ML Pipeline:</strong> Trained on {DATASET_STATS.symptoms} symptom features across {DATASET_STATS.diseases} disease classes using {DATASET_STATS.modelType} with stratified k-fold validation.
+                        </div>
+                    </div>
+                    
                     <div style={{
                         background: 'rgba(245,158,11,0.05)', border: '1px solid rgba(245,158,11,0.2)',
                         borderRadius: 'var(--radius-lg)', padding: '24px 32px', display: 'flex', gap: 16, alignItems: 'flex-start'
@@ -159,7 +232,7 @@ export default function Landing() {
                         © 2025 HealthAI — AI Clinical Triage System
                     </span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                        Built with FastAPI · XGBoost · SciSpacy · React
+                        Built with FastAPI · XGBoost · SciSpacy · React · Trained on 246K+ Medical Records
                     </span>
                 </div>
             </footer>
