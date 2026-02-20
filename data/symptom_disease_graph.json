@@ -1,0 +1,272 @@
+{
+  "body_pain": {
+    "synonyms": ["body ache", "body aches", "body pains", "aching body", "aching all over", "muscle pain", "muscle ache", "myalgia", "generalized pain"],
+    "diseases": ["viral_infection", "influenza", "dengue", "COVID19", "fibromyalgia", "chronic_fatigue"],
+    "follow_up_questions": [
+      {"id": "bp_duration", "text": "How long have you had the body pain?", "type": "duration"},
+      {"id": "bp_fever", "text": "Do you have a fever?", "type": "yesno"},
+      {"id": "bp_fatigue", "text": "Do you feel unusually tired or fatigued?", "type": "yesno"},
+      {"id": "bp_specific", "text": "Is the pain more in specific areas (joints, muscles, back)?", "type": "text"}
+    ],
+    "red_flag": false,
+    "base_urgency": "home_care",
+    "remedies": ["rest adequately", "OTC pain relievers", "warm compress", "gentle stretching", "stay hydrated"],
+    "nutrition": ["anti-inflammatory foods", "turmeric", "ginger tea", "vitamin D", "protein-rich foods"]
+  },
+
+  "headache": {
+    "synonyms": ["head pain", "head ache", "migraine", "cephalgia"],
+    "diseases": ["migraine", "tension_headache", "hypertension", "meningitis", "sinusitis", "cluster_headache"],
+    "follow_up_questions": [
+      {"id": "headache_location", "text": "Where exactly is the headache? (forehead, one side, back of head, all over)", "type": "text"},
+      {"id": "headache_severity", "text": "On a scale of 1-10, how severe is the pain?", "type": "scale"},
+      {"id": "headache_duration", "text": "How long have you had this headache?", "type": "duration"},
+      {"id": "headache_nausea", "text": "Do you have nausea or vomiting?", "type": "yesno"},
+      {"id": "headache_vision", "text": "Any changes in vision, blurred or double vision?", "type": "yesno"},
+      {"id": "headache_fever", "text": "Do you have a fever?", "type": "yesno"},
+      {"id": "headache_neck", "text": "Do you have neck stiffness or pain?", "type": "yesno"},
+      {"id": "headache_sudden", "text": "Did the headache come on suddenly and severely (worst of your life)?", "type": "yesno"}
+    ],
+    "red_flag": false,
+    "base_urgency": "home_care",
+    "remedies": ["rest in a dark quiet room", "stay hydrated", "OTC pain reliever (ibuprofen/paracetamol)", "cold or warm compress"],
+    "nutrition": ["magnesium-rich foods (nuts, seeds)", "reduce caffeine gradually", "stay hydrated with water"]
+  },
+
+  "chest_pain": {
+    "synonyms": ["chest ache", "chest tightness", "chest pressure", "heart pain", "chest discomfort"],
+    "diseases": ["myocardial_infarction", "angina", "GERD", "anxiety", "pulmonary_embolism", "costochondritis", "pneumonia"],
+    "follow_up_questions": [
+      {"id": "cp_duration", "text": "How long have you had this chest pain?", "type": "duration"},
+      {"id": "cp_radiation", "text": "Does the pain radiate to your left arm, jaw, or back?", "type": "yesno"},
+      {"id": "cp_sweating", "text": "Are you sweating excessively?", "type": "yesno"},
+      {"id": "cp_breath", "text": "Do you have shortness of breath?", "type": "yesno"},
+      {"id": "cp_nausea", "text": "Do you feel nauseous?", "type": "yesno"},
+      {"id": "cp_position", "text": "Does the pain worsen when you lie down or improve when you sit up?", "type": "yesno"},
+      {"id": "cp_activity", "text": "Did the pain start during physical activity?", "type": "yesno"}
+    ],
+    "red_flag": true,
+    "base_urgency": "urgent",
+    "remedies": ["seek medical attention immediately if severe", "sit or lie in comfortable position", "loosen tight clothing"],
+    "nutrition": ["low-sodium diet", "avoid heavy meals", "omega-3 rich foods for heart health"]
+  },
+
+  "fever": {
+    "synonyms": ["high temperature", "pyrexia", "chills", "hot body"],
+    "diseases": ["viral_infection", "bacterial_infection", "dengue", "malaria", "typhoid", "UTI", "COVID19", "influenza"],
+    "follow_up_questions": [
+      {"id": "fever_temp", "text": "What is your temperature if measured?", "type": "text"},
+      {"id": "fever_duration", "text": "How many days have you had the fever?", "type": "duration"},
+      {"id": "fever_chills", "text": "Do you have chills or rigors?", "type": "yesno"},
+      {"id": "fever_rash", "text": "Do you have any rash?", "type": "yesno"},
+      {"id": "fever_travel", "text": "Have you recently traveled to a malaria/dengue-prone area?", "type": "yesno"},
+      {"id": "fever_cough", "text": "Do you have a cough or sore throat?", "type": "yesno"},
+      {"id": "fever_urinary", "text": "Any burning sensation when urinating?", "type": "yesno"}
+    ],
+    "red_flag": false,
+    "base_urgency": "home_care",
+    "remedies": ["rest adequately", "take paracetamol for fever", "stay hydrated", "cool compress"],
+    "nutrition": ["oral rehydration fluids", "light easily digestible foods", "vitamin C rich fruits", "warm soups"]
+  },
+
+  "shortness_of_breath": {
+    "synonyms": ["breathlessness", "difficulty breathing", "can't breathe", "dyspnea", "breathless"],
+    "diseases": ["asthma", "COPD", "pulmonary_embolism", "heart_failure", "pneumonia", "anxiety", "anemia"],
+    "follow_up_questions": [
+      {"id": "sob_onset", "text": "Did breathlessness start suddenly or gradually?", "type": "choice", "options": ["Suddenly", "Gradually"]},
+      {"id": "sob_rest", "text": "Do you have breathlessness even at rest?", "type": "yesno"},
+      {"id": "sob_wheeze", "text": "Do you hear a wheezing sound when breathing?", "type": "yesno"},
+      {"id": "sob_position", "text": "Is it worse when lying down?", "type": "yesno"},
+      {"id": "sob_cp", "text": "Do you also have chest pain?", "type": "yesno"},
+      {"id": "sob_legs", "text": "Do you have swelling in your legs?", "type": "yesno"}
+    ],
+    "red_flag": true,
+    "base_urgency": "urgent",
+    "remedies": ["sit upright to open airways", "use prescribed inhaler if available", "call emergency if severe"],
+    "nutrition": ["anti-inflammatory foods", "avoid dairy if asthmatic", "stay well hydrated"]
+  },
+
+  "abdominal_pain": {
+    "synonyms": ["stomach pain", "belly pain", "tummy ache", "abdomen pain", "stomach ache", "gut pain"],
+    "diseases": ["appendicitis", "gastritis", "IBS", "kidney_stone", "UTI", "gastroenteritis", "peptic_ulcer", "pancreatitis"],
+    "follow_up_questions": [
+      {"id": "ap_location", "text": "Where exactly is the pain? (upper, lower, right side, left side, all over)", "type": "text"},
+      {"id": "ap_severity", "text": "How severe is the pain on a scale of 1-10?", "type": "scale"},
+      {"id": "ap_vomiting", "text": "Do you have vomiting or nausea?", "type": "yesno"},
+      {"id": "ap_bowel", "text": "Any change in bowel habits (diarrhea or constipation)?", "type": "yesno"},
+      {"id": "ap_fever", "text": "Do you have a fever?", "type": "yesno"},
+      {"id": "ap_urinary", "text": "Any pain or burning during urination?", "type": "yesno"},
+      {"id": "ap_food", "text": "Did symptoms start after eating?", "type": "yesno"}
+    ],
+    "red_flag": false,
+    "base_urgency": "home_care",
+    "remedies": ["rest and avoid solid food initially", "clear fluids and ORS", "apply warm compress to abdomen"],
+    "nutrition": ["BRAT diet (banana, rice, applesauce, toast)", "probiotics (yogurt)", "avoid spicy and fatty food"]
+  },
+
+  "dizziness": {
+    "synonyms": ["vertigo", "lightheaded", "spinning", "giddiness", "unsteady"],
+    "diseases": ["BPPV", "hypotension", "anemia", "anxiety", "dehydration", "inner_ear_infection", "stroke"],
+    "follow_up_questions": [
+      {"id": "diz_type", "text": "Does the room feel like it's spinning (vertigo) or do you just feel lightheaded?", "type": "choice", "options": ["Room spinning", "Lightheaded", "Both"]},
+      {"id": "diz_trigger", "text": "Does it happen when you stand up quickly?", "type": "yesno"},
+      {"id": "diz_hearing", "text": "Do you have ringing in your ears or hearing loss?", "type": "yesno"},
+      {"id": "diz_speech", "text": "Any difficulty speaking or facial drooping?", "type": "yesno"},
+      {"id": "diz_headache", "text": "Do you have a headache along with dizziness?", "type": "yesno"}
+    ],
+    "red_flag": false,
+    "base_urgency": "home_care",
+    "remedies": ["sit or lie down immediately", "move slowly when changing positions", "stay hydrated"],
+    "nutrition": ["increase water intake", "small frequent meals", "reduce salt and caffeine", "iron-rich foods if anemic"]
+  },
+
+  "cough": {
+    "synonyms": ["coughing", "dry cough", "wet cough", "productive cough", "persistent cough"],
+    "diseases": ["common_cold", "influenza", "COVID19", "bronchitis", "pneumonia", "asthma", "GERD", "TB"],
+    "follow_up_questions": [
+      {"id": "cough_type", "text": "Is your cough dry or do you cough up phlegm/mucus?", "type": "choice", "options": ["Dry", "Wet/Productive", "Both"]},
+      {"id": "cough_duration", "text": "How long have you been coughing?", "type": "duration"},
+      {"id": "cough_blood", "text": "Do you cough up any blood?", "type": "yesno"},
+      {"id": "cough_fever", "text": "Do you have a fever?", "type": "yesno"},
+      {"id": "cough_night", "text": "Is the cough worse at night?", "type": "yesno"},
+      {"id": "cough_breath", "text": "Do you have shortness of breath?", "type": "yesno"}
+    ],
+    "red_flag": false,
+    "base_urgency": "home_care",
+    "remedies": ["honey with warm water", "steam inhalation", "stay hydrated", "avoid cold air"],
+    "nutrition": ["warm soups", "turmeric milk", "ginger tea", "vitamin C foods", "honey"]
+  },
+
+  "nausea_vomiting": {
+    "synonyms": ["nausea", "vomiting", "throwing up", "feeling sick", "queasy", "puke"],
+    "diseases": ["gastroenteritis", "food_poisoning", "pregnancy", "migraine", "meningitis", "appendicitis"],
+    "follow_up_questions": [
+      {"id": "nv_duration", "text": "How long have you been feeling nauseous or vomiting?", "type": "duration"},
+      {"id": "nv_blood", "text": "Is there blood in your vomit?", "type": "yesno"},
+      {"id": "nv_abdominal", "text": "Do you have abdominal pain?", "type": "yesno"},
+      {"id": "nv_food", "text": "Did it start after eating? Did others who ate the same food get sick?", "type": "yesno"},
+      {"id": "nv_pregnant", "text": "Could you be pregnant? (for female patients)", "type": "yesno"},
+      {"id": "nv_dehydration", "text": "Are you unable to keep any fluids down for over 8 hours?", "type": "yesno"}
+    ],
+    "red_flag": false,
+    "base_urgency": "home_care",
+    "remedies": ["sip clear fluids slowly", "ORS for hydration", "ginger tea", "rest", "avoid solid food until settled"],
+    "nutrition": ["BRAT diet", "coconut water", "clear broths", "avoid dairy and spicy foods"]
+  },
+
+  "joint_pain": {
+    "synonyms": ["arthralgia", "joint ache", "knee pain", "hip pain", "joints hurting", "arthritis"],
+    "diseases": ["osteoarthritis", "rheumatoid_arthritis", "gout", "dengue", "lupus", "septic_arthritis"],
+    "follow_up_questions": [
+      {"id": "jp_joints", "text": "Which joints are affected?", "type": "text"},
+      {"id": "jp_swelling", "text": "Is there visible swelling or redness?", "type": "yesno"},
+      {"id": "jp_morning", "text": "Is stiffness worse in the morning?", "type": "yesno"},
+      {"id": "jp_fever", "text": "Do you have a fever along with joint pain?", "type": "yesno"},
+      {"id": "jp_duration", "text": "How long have you had joint pain?", "type": "duration"},
+      {"id": "jp_trauma", "text": "Was there any injury or trauma to the joint?", "type": "yesno"}
+    ],
+    "red_flag": false,
+    "base_urgency": "home_care",
+    "remedies": ["rest the affected joint", "ice/heat therapy", "OTC anti-inflammatories", "gentle range-of-motion exercises"],
+    "nutrition": ["omega-3 fatty acids (fish, flaxseed)", "turmeric and ginger", "vitamin D", "calcium-rich foods"]
+  },
+
+  "back_pain": {
+    "synonyms": ["backache", "lower back pain", "spine pain", "lumbar pain"],
+    "diseases": ["muscle_strain", "herniated_disc", "kidney_stone", "osteoporosis", "sciatica"],
+    "follow_up_questions": [
+      {"id": "bp_location", "text": "Is the pain in the upper, middle, or lower back?", "type": "choice", "options": ["Upper", "Middle", "Lower", "All"]},
+      {"id": "bp_radiation", "text": "Does the pain radiate down your leg?", "type": "yesno"},
+      {"id": "bp_bladder", "text": "Any difficulty with bladder or bowel control?", "type": "yesno"},
+      {"id": "bp_injury", "text": "Did you have any recent injury or lift something heavy?", "type": "yesno"},
+      {"id": "bp_fever", "text": "Do you have a fever?", "type": "yesno"}
+    ],
+    "red_flag": false,
+    "base_urgency": "home_care",
+    "remedies": ["gentle stretching", "ice for first 48h then heat", "OTC pain relievers", "avoid prolonged bed rest"],
+    "nutrition": ["calcium and vitamin D", "anti-inflammatory foods", "turmeric", "collagen-rich foods"]
+  },
+
+  "rash": {
+    "synonyms": ["skin rash", "hives", "skin eruption", "red spots", "itchy skin", "urticaria"],
+    "diseases": ["allergic_reaction", "eczema", "psoriasis", "chickenpox", "dengue", "drug_reaction", "contact_dermatitis"],
+    "follow_up_questions": [
+      {"id": "rash_location", "text": "Where is the rash and how far has it spread?", "type": "text"},
+      {"id": "rash_itch", "text": "Is the rash itchy?", "type": "yesno"},
+      {"id": "rash_fever", "text": "Do you have a fever?", "type": "yesno"},
+      {"id": "rash_blisters", "text": "Are there blisters or fluid-filled bumps?", "type": "yesno"},
+      {"id": "rash_trigger", "text": "Did you start any new medication, food, or come into contact with something new?", "type": "yesno"},
+      {"id": "rash_breathing", "text": "Any difficulty breathing or throat tightening?", "type": "yesno"}
+    ],
+    "red_flag": false,
+    "base_urgency": "home_care",
+    "remedies": ["avoid scratching", "cool compress", "hydrocortisone cream", "antihistamine if allergic"],
+    "nutrition": ["anti-inflammatory foods", "avoid potential allergens", "vitamin E rich foods", "stay hydrated"]
+  },
+
+  "fatigue": {
+    "synonyms": ["tiredness", "exhaustion", "weakness", "lethargy", "lack of energy", "feeling weak"],
+    "diseases": ["anemia", "hypothyroidism", "diabetes", "depression", "chronic_fatigue_syndrome", "viral_infection", "heart_failure"],
+    "follow_up_questions": [
+      {"id": "fat_duration", "text": "How long have you been feeling fatigued?", "type": "duration"},
+      {"id": "fat_sleep", "text": "Are you sleeping enough? (7-8 hours)", "type": "yesno"},
+      {"id": "fat_weight", "text": "Have you had unexplained weight loss or gain recently?", "type": "yesno"},
+      {"id": "fat_mood", "text": "Do you feel sad, hopeless, or uninterested in activities you used to enjoy?", "type": "yesno"},
+      {"id": "fat_thirst", "text": "Have you been unusually thirsty or urinating frequently?", "type": "yesno"},
+      {"id": "fat_cold", "text": "Do you feel cold all the time or have dry skin/hair?", "type": "yesno"}
+    ],
+    "red_flag": false,
+    "base_urgency": "home_care",
+    "remedies": ["improve sleep hygiene", "moderate exercise", "stress management", "treat underlying condition"],
+    "nutrition": ["iron-rich foods (spinach, lentils)", "B12 foods", "complex carbohydrates", "avoid excessive sugar"]
+  },
+
+  "sore_throat": {
+    "synonyms": ["throat pain", "throat ache", "strep throat", "tonsil pain", "difficulty swallowing"],
+    "diseases": ["pharyngitis", "strep_throat", "tonsillitis", "mono", "common_cold", "COVID19"],
+    "follow_up_questions": [
+      {"id": "st_duration", "text": "How long have you had a sore throat?", "type": "duration"},
+      {"id": "st_fever", "text": "Do you have a fever?", "type": "yesno"},
+      {"id": "st_swallow", "text": "Can you swallow liquids without severe pain?", "type": "yesno"},
+      {"id": "st_white", "text": "Do you see white patches on your tonsils?", "type": "yesno"},
+      {"id": "st_glands", "text": "Are your neck glands swollen?", "type": "yesno"},
+      {"id": "st_breathe", "text": "Do you have difficulty breathing?", "type": "yesno"}
+    ],
+    "red_flag": false,
+    "base_urgency": "home_care",
+    "remedies": ["salt water gargle", "warm honey lemon tea", "OTC pain relievers", "stay hydrated", "rest voice"],
+    "nutrition": ["warm soups and broths", "honey", "ginger tea", "cold ice cream/frozen foods to soothe", "vitamin C"]
+  },
+
+  "palpitations": {
+    "synonyms": ["heart racing", "irregular heartbeat", "heart fluttering", "fast heart rate", "thumping heart"],
+    "diseases": ["arrhythmia", "atrial_fibrillation", "anxiety", "hyperthyroidism", "anemia", "panic_attack"],
+    "follow_up_questions": [
+      {"id": "pal_duration", "text": "How long do the palpitations last each time?", "type": "duration"},
+      {"id": "pal_trigger", "text": "Do they start when exercising, resting, or with stress?", "type": "text"},
+      {"id": "pal_dizzy", "text": "Do you feel dizzy or faint during episodes?", "type": "yesno"},
+      {"id": "pal_chest", "text": "Do you have chest pain with the palpitations?", "type": "yesno"},
+      {"id": "pal_anxiety", "text": "Are you under significant stress or anxiety?", "type": "yesno"}
+    ],
+    "red_flag": true,
+    "base_urgency": "urgent",
+    "remedies": ["sit or lie down during episode", "try vagal maneuvers (bear down gently)", "avoid caffeine and alcohol"],
+    "nutrition": ["magnesium-rich foods", "potassium-rich foods (banana)", "reduce caffeine", "avoid alcohol"]
+  },
+
+  "bleeding": {
+    "synonyms": ["blood loss", "hemorrhage", "bleeding wound", "vaginal bleeding"],
+    "diseases": ["trauma", "coagulation_disorder", "menstrual_disorder", "miscarriage", "peptic_ulcer"],
+    "follow_up_questions": [
+      {"id": "bl_site", "text": "Where are you bleeding from?", "type": "text"},
+      {"id": "bl_amount", "text": "Is it heavy bleeding or light?", "type": "choice", "options": ["Heavy", "Moderate", "Light"]},
+      {"id": "bl_stop", "text": "Can you stop the bleeding with pressure?", "type": "yesno"},
+      {"id": "bl_pregnant", "text": "Are you pregnant or could you be pregnant?", "type": "yesno"},
+      {"id": "bl_duration", "text": "How long have you been bleeding?", "type": "duration"}
+    ],
+    "red_flag": true,
+    "base_urgency": "urgent",
+    "remedies": ["apply direct pressure", "elevate if limb", "go to emergency if uncontrolled"],
+    "nutrition": ["iron-rich foods post-recovery", "vitamin K foods for clotting", "stay hydrated"]
+  }
+}

@@ -1,0 +1,247 @@
+/* ============================================================
+   HealthAI — Global Design System
+   Dark-mode premium UI with glassmorphism & micro-animations
+   ============================================================ */
+
+:root {
+  /* Color Palette */
+  --bg-primary: #050d1a;
+  --bg-secondary: #0a1628;
+  --bg-card: rgba(10, 22, 40, 0.8);
+  --bg-glass: rgba(255, 255, 255, 0.04);
+  --border-glass: rgba(255, 255, 255, 0.08);
+
+  --accent-teal: #00d4aa;
+  --accent-teal-dim: rgba(0, 212, 170, 0.15);
+  --accent-blue: #3b82f6;
+  --accent-blue-dim: rgba(59, 130, 246, 0.15);
+  --accent-purple: #8b5cf6;
+
+  --emergency: #ef4444;
+  --emergency-dim: rgba(239, 68, 68, 0.15);
+  --urgent: #f59e0b;
+  --urgent-dim: rgba(245, 158, 11, 0.15);
+  --homecare: #10b981;
+  --homecare-dim: rgba(16, 185, 129, 0.15);
+
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #475569;
+
+  /* Gradients */
+  --gradient-brand: linear-gradient(135deg, #00d4aa 0%, #3b82f6 50%, #8b5cf6 100%);
+  --gradient-card: linear-gradient(145deg, rgba(0,212,170,0.06) 0%, rgba(59,130,246,0.04) 100%);
+  --gradient-emergency: linear-gradient(135deg, rgba(239,68,68,0.2) 0%, rgba(239,68,68,0.05) 100%);
+  --gradient-urgent: linear-gradient(135deg, rgba(245,158,11,0.2) 0%, rgba(245,158,11,0.05) 100%);
+  --gradient-homecare: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(16,185,129,0.05) 100%);
+
+  /* Shadows */
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255,255,255,0.05) inset;
+  --shadow-glow-teal: 0 0 30px rgba(0, 212, 170, 0.2);
+  --shadow-glow-emergency: 0 0 30px rgba(239, 68, 68, 0.3);
+
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Spacing */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* Transitions */
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.6;
+  overflow-x: hidden;
+  background-image:
+    radial-gradient(ellipse at 10% 0%, rgba(0,212,170,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 90% 0%, rgba(59,130,246,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 100%, rgba(139,92,246,0.04) 0%, transparent 60%);
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 3px; }
+
+/* ── Typography ── */
+h1, h2, h3, h4 { line-height: 1.2; letter-spacing: -0.02em; }
+h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; }
+h2 { font-size: clamp(1.5rem, 3vw, 2.25rem); font-weight: 700; }
+h3 { font-size: 1.25rem; font-weight: 600; }
+p { color: var(--text-secondary); }
+
+/* ── Gradient Text ── */
+.gradient-text {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Glass Card ── */
+.glass-card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary {
+  background: var(--gradient-brand);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(0, 212, 170, 0.3);
+}
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 212, 170, 0.4);
+}
+
+.btn-secondary {
+  background: var(--bg-glass);
+  color: var(--text-primary);
+  border: 1px solid var(--border-glass);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(255,255,255,0.08);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 8px 16px;
+}
+.btn-ghost:hover { color: var(--text-primary); background: var(--bg-glass); }
+
+/* ── Inputs ── */
+.input-field {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  transition: var(--transition);
+  outline: none;
+}
+.input-field::placeholder { color: var(--text-muted); }
+.input-field:focus {
+  border-color: var(--accent-teal);
+  background: rgba(0,212,170,0.05);
+  box-shadow: 0 0 0 3px rgba(0,212,170,0.1);
+}
+
+textarea.input-field { resize: vertical; min-height: 100px; }
+
+/* ── Badge ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.badge-emergency { background: var(--emergency-dim); color: var(--emergency); border: 1px solid rgba(239,68,68,0.2); }
+.badge-urgent    { background: var(--urgent-dim);    color: var(--urgent);    border: 1px solid rgba(245,158,11,0.2); }
+.badge-homecare  { background: var(--homecare-dim);  color: var(--homecare);  border: 1px solid rgba(16,185,129,0.2); }
+.badge-info      { background: var(--accent-blue-dim); color: var(--accent-blue); border: 1px solid rgba(59,130,246,0.2); }
+
+/* ── Spinner ── */
+.spinner {
+  width: 20px; height: 20px;
+  border: 2px solid var(--border-glass);
+  border-top-color: var(--accent-teal);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Pulse dot ── */
+.pulse-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--accent-teal);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(0,212,170,0.4); }
+  50% { opacity: 0.8; transform: scale(1.1); box-shadow: 0 0 0 8px rgba(0,212,170,0); }
+}
+
+/* ── Progress Bar ── */
+.progress-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--gradient-brand);
+  border-radius: 2px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Layout Helpers ── */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-col { display: flex; flex-direction: column; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+.gap-6 { gap: 24px; }
+
+/* ── Triage Colors ── */
+.triage-Emergency { color: var(--emergency); }
+.triage-Urgent { color: var(--urgent); }
+.triage-HomeCare { color: var(--homecare); }
+
+/* ── Divider ── */
+.divider { height: 1px; background: var(--border-glass); margin: 24px 0; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .container { padding: 0 16px; }
+  .hide-mobile { display: none; }
+}

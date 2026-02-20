@@ -1,0 +1,1 @@
+["age", "severity_score", "duration_hours", "symptom_count", "red_flag_count", "has_fever", "has_chest_pain", "has_shortness_of_breath", "has_head_symptoms", "has_gi_symptoms", "bayesian_urgency_score", "comorbidity_count"]
