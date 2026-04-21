@@ -212,6 +212,59 @@ GEMINI_API_KEY=your_gemini_api_key
 
 ---
 
+## ▲ Deploy On Vercel
+
+This repository is configured for single-project Vercel deployment (frontend + backend together).
+
+### 1. Import Repository
+
+Import this GitHub repo in Vercel:
+
+- `https://github.com/Asha0509/IOMP_HealthCare.git`
+
+The root `vercel.json` handles:
+
+- FastAPI backend from `backend/main.py`
+- React frontend static build from `frontend/`
+- Route forwarding `/api/*` and `/health` to the backend
+
+### 2. Add Environment Variables In Vercel
+
+Add all of these in **Project Settings → Environment Variables**:
+
+- `APP_NAME`
+- `VERSION`
+- `ENVIRONMENT`
+- `DEBUG`
+- `SECRET_KEY`
+- `ALGORITHM`
+- `ACCESS_TOKEN_EXPIRE_MINUTES`
+- `DATABASE_URL` (recommended on Vercel: `sqlite+aiosqlite:////tmp/health_triage.db`)
+- `USE_MEMORY_SESSION`
+- `REDIS_URL`
+- `SESSION_EXPIRE_SECONDS`
+- `GROQ_API_KEY` (required unless `NVIDIA_NIM_API_KEY` is provided)
+- `GROQ_MODEL`
+- `NVIDIA_NIM_API_KEY` (optional fallback provider)
+- `NVIDIA_NIM_MODEL`
+- `GEMINI_API_KEY` (optional legacy compatibility)
+- `GOOGLE_MAPS_API_KEY` (optional)
+- `SPACY_MODEL`
+- `USE_SCISPACY`
+- `TRIAGE_MODEL_PATH`
+
+You can use these templates as reference:
+
+- `backend/.env.vercel.example`
+- `frontend/.env.vercel.example`
+
+### 3. Redeploy
+
+After adding variables, trigger a new deployment from Vercel dashboard.
+
+
+---
+
 ## 📝 License
 
 This project is for educational/demo purposes only.

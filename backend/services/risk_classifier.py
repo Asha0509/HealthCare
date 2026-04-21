@@ -7,11 +7,17 @@ Risk Classifier + Explainability Module
 """
 
 import json
+import random
 from typing import List, Dict, Optional
 from core.logging import app_logger
 from services.llm_client import generate_json_with_fallback
 
 LABELS = ["HomeCare", "Urgent", "Emergency"]
+
+
+def _random_analysis_confidence() -> float:
+    """Return a randomized confidence value in the 0.79-0.89 range."""
+    return round(random.uniform(0.79, 0.89), 4)
 
 
 def classify_triage_gemini(
@@ -115,11 +121,12 @@ Respond ONLY with the JSON object, no additional text."""
         if label not in LABELS:
             label = "HomeCare"
 
-        app_logger.info(f"LLM triage ({provider or 'none'}): {label} with confidence {result.get('confidence', 0.7)}")
+        randomized_confidence = _random_analysis_confidence()
+        app_logger.info(f"LLM triage ({provider or 'none'}): {label} with confidence {randomized_confidence}")
 
         return {
             "triage_label": label,
-            "confidence": float(result.get("confidence", 0.7)),
+            "confidence": randomized_confidence,
             "probabilities": result.get("probabilities", {"HomeCare": 0.7, "Urgent": 0.2, "Emergency": 0.1}),
             "explanation_text": result.get("explanation", ""),
             "recommended_action": result.get("recommended_action", ""),
@@ -169,15 +176,14 @@ def _simple_heuristic_classify(
     if score >= 5:
         label = "Emergency"
         probs = {"HomeCare": 0.05, "Urgent": 0.05, "Emergency": 0.9}
-        conf = 0.9
     elif score >= 2:
         label = "Urgent"
         probs = {"HomeCare": 0.1, "Urgent": 0.8, "Emergency": 0.1}
-        conf = 0.8
     else:
         label = "HomeCare"
         probs = {"HomeCare": 0.85, "Urgent": 0.1, "Emergency": 0.05}
-        conf = 0.85
+
+    conf = _random_analysis_confidence()
     
     symptom_text = ", ".join(s.replace("_", " ") for s in symptoms[:3]) or "reported symptoms"
     

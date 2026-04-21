@@ -8,7 +8,6 @@ Dataset: Final_Augmented_dataset_Diseases_and_Symptoms.csv
 - 246,945 samples
 - 377 symptom features (binary)
 - 773 unique disease classes
-
 Model: XGBoost Multi-class Classifier with feature engineering pipeline
 
 Run: python disease_classifier.py

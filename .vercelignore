@@ -1,0 +1,14 @@
+.git
+.github
+.venv
+node_modules
+frontend/node_modules
+backend/__pycache__
+backend/logs
+logs
+tests
+*.log
+Final_Augmented_dataset_Diseases_and_Symptoms.csv
+models/__pycache__
+models/models/*.pkl
+models/models/*.joblib

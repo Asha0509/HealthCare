@@ -120,7 +120,6 @@ async def start_triage(
 
     next_q = await adaptive_engine.get_next_question_async(symptoms, {}, 0, data.chief_complaint)
     progress = adaptive_engine.compute_progress(symptoms, {}, data.chief_complaint)
-
     # If symptoms were extracted but no follow-up is needed, finalize immediately.
     if symptoms and (not next_q or progress >= 100):
         await _run_classification(session_id, context, db)
@@ -132,7 +131,6 @@ async def start_triage(
             extracted_symptoms=symptoms,
             message="Assessment complete. Preparing your personalized triage result...",
         )
-
     current_question = None
     if next_q:
         current_question = QuestionResponse(
