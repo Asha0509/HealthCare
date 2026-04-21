@@ -104,6 +104,9 @@ python -m venv ../.venv
 # Install dependencies
 pip install -r requirements.txt
 
+# Optional: install training/offline ML dependencies only when needed
+# pip install -r requirements-training.txt
+
 # Create .env file with your Gemini API key
 echo "GEMINI_API_KEY=your_api_key_here" > .env
 
