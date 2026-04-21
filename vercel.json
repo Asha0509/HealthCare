@@ -1,33 +1,14 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "backend/main.py",
-      "use": "@vercel/python"
+  "experimentalServices": {
+    "frontend": {
+      "entrypoint": "frontend",
+      "routePrefix": "/",
+      "framework": "vite"
     },
-    {
-      "src": "frontend/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
+    "backend": {
+      "entrypoint": "backend",
+      "routePrefix": "/_/backend"
     }
-  ],
-  "routes": [
-    {
-      "src": "/health",
-      "dest": "backend/main.py"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "backend/main.py"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ]
+  }
 }
