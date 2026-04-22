@@ -27,6 +27,7 @@
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-muted: #ffffff;
+  --text-input-muted: #475569;
 
   /* Gradients */
   --gradient-brand: linear-gradient(135deg, #00d4aa 0%, #3b82f6 50%, #8b5cf6 100%);
@@ -160,7 +161,7 @@ p { color: var(--text-secondary); }
   transition: var(--transition);
   outline: none;
 }
-.input-field::placeholder { color: var(--text-muted); }
+.input-field::placeholder { color: var(--text-input-muted); }
 .input-field:focus {
   border-color: var(--accent-teal);
   background: rgba(0,212,170,0.05);
