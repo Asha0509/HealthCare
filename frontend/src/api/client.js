@@ -1,7 +1,8 @@
 import axios from 'axios'
 
 const API = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || '/_/backend',
+    // Keep endpoint paths as /api/* and let dev proxy / deployment rewrites route them.
+    baseURL: import.meta.env.VITE_API_URL || '',
     timeout: 30000,
 })
 
