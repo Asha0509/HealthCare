@@ -210,8 +210,6 @@ def _simple_heuristic_classify(
         "medications": [],
         "model_used": "heuristic",
     }
-
-
 def classify_triage(
     symptoms: List[str],
     severity: Optional[float],

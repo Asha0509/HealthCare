@@ -52,8 +52,7 @@ async def reverse_geocode(lat: float, lon: float) -> str:
     except Exception as e:
         app_logger.warning(f"Reverse geocoding failed: {e}")
         return ""
-
-
+    
 async def get_hospitals_from_gemini(
     urgency: str,
     lat: Optional[float],

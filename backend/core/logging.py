@@ -1,3 +1,4 @@
+import os
 import sys
 import hashlib
 from loguru import logger
@@ -13,15 +14,16 @@ def setup_logging():
         "<level>{message}</level>"
     )
     logger.add(sys.stdout, format=log_format, level="DEBUG" if settings.DEBUG else "INFO", colorize=True)
-    logger.add(
-        "logs/app.log",
-        format=log_format,
-        level="INFO",
-        rotation="10 MB",
-        retention="30 days",
-        compression="zip",
-        enqueue=True,
-    )
+    if not os.environ.get("VERCEL"):
+        logger.add(
+            "logs/app.log",
+            format=log_format,
+            level="INFO",
+            rotation="10 MB",
+            retention="30 days",
+            compression="zip",
+            enqueue=True,
+        )
     return logger
 
 
