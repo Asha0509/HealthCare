@@ -48,3 +48,6 @@ Thumbs.db
 # Large dataset files
 Final_Augmented_dataset_Diseases_and_Symptoms.csv
 models/models/*.pkl
+
+# Embedding model downloaded at build time (scripts/fetch_embedder.py)
+backend/models_cache/
