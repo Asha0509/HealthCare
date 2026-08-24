@@ -70,12 +70,12 @@ Return a JSON array of question IDs to KEEP (not skip). Example: ["cp_duration",
 Only return the JSON array, nothing else."""
 
     try:
-        keep_ids, provider = generate_json_with_fallback(
-            prompt=prompt,
-            default=[],
-            temperature=0.1,
-            max_tokens=260,
-        )
+        # The LLM client is synchronous; run it off the event loop.
+        from fastapi.concurrency import run_in_threadpool
+        from services import observability
+        with observability.tagged(observability.current_session.get(), "question_filter"):
+            keep_ids, provider = await run_in_threadpool(
+                generate_json_with_fallback, prompt=prompt, default=[], temperature=0.1, max_tokens=260)
         if not isinstance(keep_ids, list) or not keep_ids:
             return questions
 

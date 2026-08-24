@@ -24,11 +24,13 @@ async def _ensure_runtime_schema(session: AsyncSession) -> None:
         if dialect == "sqlite":
             table_info = await session.execute(text("PRAGMA table_info(triage_results)"))
             columns = {row[1] for row in table_info.fetchall()}
-            if "medications" not in columns:
-                await session.execute(text("ALTER TABLE triage_results ADD COLUMN medications JSON"))
-                await session.commit()
+            for col in ("medications", "details"):
+                if col not in columns:
+                    await session.execute(text(f"ALTER TABLE triage_results ADD COLUMN {col} JSON"))
+            await session.commit()
         elif dialect == "postgresql":
             await session.execute(text("ALTER TABLE triage_results ADD COLUMN IF NOT EXISTS medications JSONB"))
+            await session.execute(text("ALTER TABLE triage_results ADD COLUMN IF NOT EXISTS details JSONB"))
             await session.commit()
     except OperationalError:
         # Column may already exist in concurrent scenarios.
@@ -46,10 +48,12 @@ async def init_db():
         if dialect == "sqlite":
             table_info = await conn.execute(text("PRAGMA table_info(triage_results)"))
             columns = {row[1] for row in table_info.fetchall()}
-            if "medications" not in columns:
-                await conn.execute(text("ALTER TABLE triage_results ADD COLUMN medications JSON"))
+            for col in ("medications", "details"):
+                if col not in columns:
+                    await conn.execute(text(f"ALTER TABLE triage_results ADD COLUMN {col} JSON"))
         elif dialect == "postgresql":
             await conn.execute(text("ALTER TABLE triage_results ADD COLUMN IF NOT EXISTS medications JSONB"))
+            await conn.execute(text("ALTER TABLE triage_results ADD COLUMN IF NOT EXISTS details JSONB"))
 
 
 async def get_db():
@@ -111,6 +115,7 @@ class TriageResultModel(Base):
     remedies = Column(JSON, default=[])  # JSON instead of ARRAY
     nutrition_tips = Column(JSON, default=[])  # JSON instead of ARRAY
     medications = Column(JSON, default=[])
+    details = Column(JSON)  # agent trace, citations, red flags, provider, latency
     crisis_response = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 

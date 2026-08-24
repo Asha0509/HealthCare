@@ -13,7 +13,7 @@ from fastapi.responses import JSONResponse
 
 from core.config import settings
 from core.logging import app_logger
-from api import triage, hospitals
+from api import facilities, system, triage
 
 app = FastAPI(
     title="AI Clinical Triage System",
@@ -43,13 +43,14 @@ async def global_exception_handler(request: Request, exc: Exception):
     app_logger.error(f"Unhandled error on {request.url.path}: {exc}")
     return JSONResponse(
         status_code=500,
-        content={"detail": str(exc)},
+        content={"detail": "Something went wrong on our side. Please try again."},
     )
 
 
 # Routers
 app.include_router(triage.router)
-app.include_router(hospitals.router)
+app.include_router(facilities.router)
+app.include_router(system.router)
 
 
 # Health check
@@ -66,6 +67,10 @@ async def startup():
     
     from db.database import init_db
     await init_db()
+    # Load the knowledge base + embedding model now, not on the first patient's request.
+    from fastapi.concurrency import run_in_threadpool
+    from services.rag import retriever
+    await run_in_threadpool(retriever.ensure_loaded)
     app_logger.info("Database initialized. Server ready!")
 
 

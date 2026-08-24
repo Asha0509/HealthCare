@@ -183,20 +183,21 @@ def extract_severity(text: str) -> Optional[int]:
 
 
 def detect_intent(text: str) -> str:
-    """Classify user intent: symptom_report | emergency_signal | crisis | query | greeting."""
+    """Classify user intent: symptom_report | emergency_signal | crisis | query | greeting.
+
+    Keyword-only on purpose: this used to re-run symptom extraction (a second
+    LLM call per message) just to return the same default.
+    """
     text_lower = text.lower()
     if any(phrase in text_lower for phrase in CRISIS_PHRASES):
         return "crisis"
     if any(phrase in text_lower for phrase in EMERGENCY_PHRASES):
         return "emergency_signal"
-    if any(w in text_lower for w in ["hello", "hi", "hey", "good morning", "good evening", "howdy"]):
+    if re.search(r"^\s*(hello|hi|hey|good morning|good evening|howdy)\b", text_lower):
         return "greeting"
     if any(w in text_lower for w in ["what is", "how do", "explain", "tell me about", "what are"]):
         return "query"
-    # If symptoms found → symptom_report
-    if extract_symptoms(text):
-        return "symptom_report"
-    return "symptom_report"  # default
+    return "symptom_report"
 
 
 def process_text(

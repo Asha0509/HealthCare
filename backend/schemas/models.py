@@ -98,22 +98,60 @@ class SHAPFeature(BaseModel):
     direction: str  # "increases_risk" | "decreases_risk"
     human_label: str
 
+class RedFlagOut(BaseModel):
+    rule_id: str
+    level: str
+    reason: str
+    matched: str
+
+
+class Citation(BaseModel):
+    chunk_id: str
+    title: str
+    section: str
+    text: str
+    url: Optional[str] = None
+    score: Optional[float] = None
+
+
 class TriageResult(BaseModel):
     session_id: str
     triage_label: TriageLabel
-    confidence: float
-    probabilities: dict
+    proposed_label: Optional[TriageLabel] = None
+    escalated: bool = False
+    probabilities: Optional[dict] = None
     red_flag_triggered: bool = False
-    red_flag_reason: Optional[str] = None
+    red_flags: List[RedFlagOut] = []
     explanation_text: str
     recommended_action: str
-    diseases_considered: List[str] = []
-    shap_features: List[SHAPFeature] = []
-    remedies: List[str] = []
+    key_factors: List[str] = []
+    conditions_to_consider: List[str] = []
+    self_care: List[str] = []
     nutrition_tips: List[str] = []
-    medications: List[str] = []
+    citations: List[Citation] = []
     crisis_response: bool = False
-    crisis_message: Optional[str] = None
+    decision_path: str = "rules"            # agent | rules | red_flag
+    fallback_reason: Optional[str] = None
+    provider: Optional[str] = None
+    model: Optional[str] = None
+    llm_calls: int = 0
+    tool_calls: int = 0
+    latency_ms: Optional[int] = None
+    agent_steps: List[dict] = []
+    symptoms: List[str] = []
+    chief_complaint: Optional[str] = None
+    created_at: Optional[str] = None
+
+
+class AssessRequest(BaseModel):
+    """One-shot assessment (sample cases, evals, API clients)."""
+    chief_complaint: str = Field(..., min_length=3, max_length=1000)
+    patient_age: Optional[int] = Field(None, ge=0, le=120)
+    patient_gender: Optional[Gender] = None
+    answers: dict = Field(default_factory=dict, description="question_id -> answer")
+    use_llm: bool = True
+    source: str = Field("api", pattern="^(api|eval|web)$")
+
 
 # ── NLP Schemas ──
 class ExtractedEntity(BaseModel):
