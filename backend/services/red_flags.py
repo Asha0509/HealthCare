@@ -31,11 +31,17 @@ def _norm(text: str) -> str:
     return " ".join((text or "").lower().replace("’", "'").split())
 
 
+# "no chest pain", "without fever", "denies headache": a symptom that is
+# explicitly absent must not trigger a rule. ("not" is deliberately excluded
+# so "not breathing" still matches.)
+_NEGATION = re.compile(r"\b(no|without|denies|denied|never had|free of)\s+(any\s+)?(\w+\s+){0,2}$")
+
+
 def _any(text: str, patterns: Iterable[str]) -> Optional[str]:
     for p in patterns:
-        m = re.search(p, text)
-        if m:
-            return m.group(0)
+        for m in re.finditer(p, text):
+            if not _NEGATION.search(text[max(0, m.start() - 40):m.start()]):
+                return m.group(0)
     return None
 
 
@@ -44,7 +50,8 @@ def _any(text: str, patterns: Iterable[str]) -> Optional[str]:
 _RULES = [
     ("crisis_self_harm", "Emergency",
      "You mentioned thoughts of ending your life or harming yourself. Please reach out for support right now.",
-     [[r"\b(kill|hurt|harm) (myself|my self)\b", r"\bsuicid", r"\bwant to die\b", r"\bend (my|it all|my life)\b",
+     [[r"\b(kill|hurt|harm) (myself|my self)\b", r"\bsuicid", r"\bwant to die\b",
+       r"\bend(ing)? (it all|my (own )?life)\b", r"\btak(e|ing) my (own )?life\b", r"\bthoughts of (dying|death)\b",
        r"\bno reason to live\b", r"\bself[- ]?harm", r"\bnot worth living\b", r"\bdon'?t want to (live|be here)\b"]]),
     ("cardiac_chest_pain_severe", "Emergency",
      "Severe or crushing chest pain can be a heart attack.",

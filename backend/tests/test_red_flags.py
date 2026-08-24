@@ -78,3 +78,25 @@ def test_duplicates_removed():
     flags = rf.scan_case("crushing chest pain", {"x": "crushing chest pain again"})
     ids = [f.rule_id for f in flags]
     assert len(ids) == len(set(ids))
+
+
+@pytest.mark.parametrize("text", [
+    "I keep having thoughts of ending my life",
+    "I want to take my own life",
+    "thinking about ending it all",
+])
+def test_crisis_phrasings(text):
+    assert rf.is_crisis(rf.scan_text(text))
+
+
+@pytest.mark.parametrize("text", [
+    "acid reflux after a heavy dinner, no chest pain",
+    "headache without any stiff neck, fever since yesterday",
+    "denies chest pain, feels heavy and tired",
+])
+def test_negated_symptoms_do_not_fire(text):
+    assert rf.highest_level(rf.scan_text(text)) != "Emergency"
+
+
+def test_not_breathing_still_fires():
+    assert rf.highest_level(rf.scan_text("he is not breathing")) == "Emergency"
