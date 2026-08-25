@@ -134,14 +134,21 @@ def detect_language(text: str) -> str:
     return "en"
 
 
+_NEGATED = re.compile(r"\b(no|not|without|denies|never had|free of)\s+(any\s+)?(\w+\s+){0,2}$")
+
+
 def extract_symptoms_keyword(text: str) -> List[str]:
-    """Match symptom keywords and synonyms from text (fallback)."""
-    text_lower = text.lower()
+    """Match symptom keywords and synonyms from text (fallback), skipping negated ones ("no fever")."""
+    text_lower = " ".join(text.lower().split())
     found = []
     synonym_map = _get_synonym_map()
     for phrase, canonical in synonym_map.items():
-        if phrase in text_lower and canonical not in found:
-            found.append(canonical)
+        if canonical in found:
+            continue
+        for m in re.finditer(r"\b" + re.escape(phrase) + r"\b", text_lower):
+            if not _NEGATED.search(text_lower[max(0, m.start() - 40):m.start()]):
+                found.append(canonical)
+                break
     return found
 
 

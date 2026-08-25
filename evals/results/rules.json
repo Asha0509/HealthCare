@@ -1,17 +1,17 @@
 {
   "pipeline": "rules",
-  "run_at": "2026-10-07T09:47:35+00:00",
+  "run_at": "2026-10-07T09:55:56+00:00",
   "target": "in-process",
   "providers": [],
   "label_note": "Expected labels were written by the project author from public triage guidance; they are not clinically validated.",
   "metrics": {
     "cases": 60,
     "errors": 0,
-    "accuracy": 0.717,
-    "macro_f1": 0.709,
+    "accuracy": 0.733,
+    "macro_f1": 0.723,
     "emergency_recall": 0.85,
     "under_triage_rate": 0.25,
-    "over_triage_rate": 0.033,
+    "over_triage_rate": 0.017,
     "critical_misses": 2,
     "critical_miss_ids": [
       "e18",
@@ -30,15 +30,15 @@
     "avg_tool_calls": 0.0,
     "per_class": {
       "HomeCare": {
-        "precision": 0.562,
-        "recall": 0.9,
-        "f1": 0.692,
+        "precision": 0.576,
+        "recall": 0.95,
+        "f1": 0.717,
         "support": 20
       },
       "Urgent": {
-        "precision": 0.727,
+        "precision": 0.8,
         "recall": 0.4,
-        "f1": 0.516,
+        "f1": 0.533,
         "support": 20
       },
       "Emergency": {
@@ -50,8 +50,8 @@
     },
     "confusion": {
       "HomeCare": {
-        "HomeCare": 18,
-        "Urgent": 2,
+        "HomeCare": 19,
+        "Urgent": 1,
         "Emergency": 0
       },
       "Urgent": {
@@ -68,7 +68,7 @@
     "by_tag": {
       "judgement": {
         "cases": 37,
-        "accuracy": 0.541
+        "accuracy": 0.568
       },
       "red_flag_age": {
         "cases": 2,
@@ -103,8 +103,8 @@
       "decision_path": "red_flag",
       "fallback_reason": "llm_disabled",
       "provider": null,
-      "latency_ms": 293,
-      "wall_ms": 314,
+      "latency_ms": 283,
+      "wall_ms": 303,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -116,7 +116,7 @@
         "heart_attack#recognise-it",
         "chest_pain#self-care"
       ],
-      "explanation": "Severe or crushing chest pain can be a heart attack. Based on chest pain and your answers, a doctor should see you soon."
+      "explanation": "Severe or crushing chest pain can be a heart attack. That warning sign sets the level to Emergency. On its own, the rule-based assessment would have said Urgent: Based on chest pain and your answers, a doctor should see you soon."
     },
     {
       "id": "e02",
@@ -142,7 +142,7 @@
         "stroke#recognise-it",
         "shortness_of_breath#get-emergency-help-if"
       ],
-      "explanation": "Face drooping, arm weakness, slurred speech or sudden confusion are stroke warning signs (FAST). Every minute counts. Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+      "explanation": "Face drooping, arm weakness, slurred speech or sudden confusion are stroke warning signs (FAST). Every minute counts. That warning sign sets the level to Emergency. On its own, the rule-based assessment would have said HomeCare: Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
     },
     {
       "id": "e03",
@@ -157,7 +157,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 5,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -168,7 +168,7 @@
         "shortness_of_breath#self-care",
         "heart_attack#recognise-it"
       ],
-      "explanation": "Serious difficulty breathing needs emergency care. Based on shortness of breath and your answers, a doctor should see you soon."
+      "explanation": "Serious difficulty breathing needs emergency care. That warning sign sets the level to Emergency. On its own, the rule-based assessment would have said Urgent: Based on shortness of breath and your answers, a doctor should see you soon."
     },
     {
       "id": "e04",
@@ -183,7 +183,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 7,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -194,7 +194,7 @@
         "stroke#recognise-it",
         "headache#self-care"
       ],
-      "explanation": "A sudden, extremely severe 'worst ever' headache can signal bleeding in the brain. Based on headache and your answers, a doctor should see you soon."
+      "explanation": "A sudden, extremely severe 'worst ever' headache can signal bleeding in the brain. That warning sign sets the level to Emergency. On its own, the rule-based assessment would have said Urgent: Based on headache and your answers, a doctor should see you soon."
     },
     {
       "id": "e05",
@@ -209,7 +209,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 5,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -220,7 +220,7 @@
         "fever#self-care",
         "fever#get-emergency-help-if"
       ],
-      "explanation": "Fever with a stiff neck, a rash that doesn't fade, or confusion can be meningitis. Based on fever and your answers, this can likely be managed at home with self-care."
+      "explanation": "Fever with a stiff neck, a rash that doesn't fade, or confusion can be meningitis. That warning sign sets the level to Emergency. On its own, the rule-based assessment would have said HomeCare: Based on fever and your answers, this can likely be managed at home with self-care."
     },
     {
       "id": "e06",
@@ -235,7 +235,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 5,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -246,7 +246,7 @@
         "sore_throat#see-a-doctor-soon-if",
         "rash#get-emergency-help-if"
       ],
-      "explanation": "Swelling of the face, lips or throat, or trouble breathing after an allergy trigger, can be anaphylaxis. Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+      "explanation": "Swelling of the face, lips or throat, or trouble breathing after an allergy trigger, can be anaphylaxis. That warning sign sets the level to Emergency. On its own, the rule-based assessment would have said HomeCare: Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
     },
     {
       "id": "e07",
@@ -261,7 +261,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 5,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -272,7 +272,7 @@
         "nausea_vomiting#self-care",
         "nausea_vomiting#see-a-doctor-soon-if"
       ],
-      "explanation": "Heavy bleeding that won't stop, or vomiting or coughing up blood, needs emergency care. Based on nausea vomiting and your answers, this can likely be managed at home with self-care."
+      "explanation": "Heavy bleeding that won't stop, or vomiting or coughing up blood, needs emergency care. That warning sign sets the level to Emergency. On its own, the rule-based assessment would have said HomeCare: Based on nausea vomiting and your answers, this can likely be managed at home with self-care."
     },
     {
       "id": "e08",
@@ -287,7 +287,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 5,
+      "wall_ms": 4,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -298,7 +298,7 @@
         "headache#self-care",
         "sore_throat#self-care"
       ],
-      "explanation": "A possible overdose or poisoning needs emergency help right away. Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+      "explanation": "A possible overdose or poisoning needs emergency help right away. That warning sign sets the level to Emergency. On its own, the rule-based assessment would have said HomeCare: Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
     },
     {
       "id": "e09",
@@ -313,7 +313,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 5,
+      "wall_ms": 4,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -325,7 +325,7 @@
         "bleeding#see-a-doctor-soon-if",
         "bleeding#self-care"
       ],
-      "explanation": "Heavy bleeding that won't stop, or vomiting or coughing up blood, needs emergency care. Based on bleeding and your answers, a doctor should see you soon."
+      "explanation": "Heavy bleeding that won't stop, or vomiting or coughing up blood, needs emergency care. That warning sign sets the level to Emergency. On its own, the rule-based assessment would have said Urgent: Based on bleeding and your answers, a doctor should see you soon."
     },
     {
       "id": "e10",
@@ -340,7 +340,7 @@
       "fallback_reason": null,
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 5,
+      "wall_ms": 4,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -365,7 +365,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 5,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -377,7 +377,7 @@
         "heart_attack#recognise-it",
         "shortness_of_breath#get-emergency-help-if"
       ],
-      "explanation": "Chest pain together with breathlessness, sweating, or pain spreading to the arm or jaw are warning signs of a heart attack. Based on chest pain, shortness of breath and your answers, a doctor should see you soon."
+      "explanation": "Chest pain together with breathlessness, sweating, or pain spreading to the arm or jaw are warning signs of a heart attack. That warning sign sets the level to Emergency. On its own, the rule-based assessment would have said Urgent: Based on chest pain, shortness of breath and your answers, a doctor should see you soon."
     },
     {
       "id": "e12",
@@ -392,7 +392,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 5,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -403,7 +403,7 @@
         "headache#get-emergency-help-if",
         "shortness_of_breath#get-emergency-help-if"
       ],
-      "explanation": "Fainting, loss of consciousness or a seizure needs urgent assessment. Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+      "explanation": "Fainting, loss of consciousness or a seizure needs urgent assessment. That warning sign sets the level to Emergency. On its own, the rule-based assessment would have said HomeCare: Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
     },
     {
       "id": "e13",
@@ -418,7 +418,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 5,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -429,7 +429,7 @@
         "fever#get-emergency-help-if",
         "fever#self-care"
       ],
-      "explanation": "Any fever in a baby under 12 months needs prompt medical assessment. Based on fever and your answers, a doctor should see you soon."
+      "explanation": "Any fever in a baby under 12 months needs prompt medical assessment. That warning sign sets the level to Emergency. On its own, the rule-based assessment would have said Urgent: Based on fever and your answers, a doctor should see you soon."
     },
     {
       "id": "e14",
@@ -444,7 +444,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -455,7 +455,7 @@
         "bleeding#get-emergency-help-if",
         "bleeding#self-care"
       ],
-      "explanation": "Bleeding that can't be stopped with pressure needs emergency care. Based on bleeding and your answers, a doctor should see you soon."
+      "explanation": "Bleeding that can't be stopped with pressure needs emergency care. That warning sign sets the level to Emergency. On its own, the rule-based assessment would have said Urgent: Based on bleeding and your answers, a doctor should see you soon."
     },
     {
       "id": "e15",
@@ -470,7 +470,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -496,7 +496,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -507,7 +507,7 @@
         "back_pain#self-care",
         "abdominal_pain#see-a-doctor-soon-if"
       ],
-      "explanation": "Back pain with loss of bladder or bowel control needs emergency care. Based on back pain and your answers, this can likely be managed at home with self-care."
+      "explanation": "Back pain with loss of bladder or bowel control needs emergency care. That warning sign sets the level to Emergency. On its own, the rule-based assessment would have said HomeCare: Based on back pain and your answers, this can likely be managed at home with self-care."
     },
     {
       "id": "e17",
@@ -522,7 +522,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 5,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -533,7 +533,7 @@
         "sore_throat#see-a-doctor-soon-if",
         "sore_throat#self-care"
       ],
-      "explanation": "A sore throat with difficulty breathing needs emergency care. Based on sore throat and your answers, this can likely be managed at home with self-care."
+      "explanation": "A sore throat with difficulty breathing needs emergency care. That warning sign sets the level to Emergency. On its own, the rule-based assessment would have said HomeCare: Based on sore throat and your answers, this can likely be managed at home with self-care."
     },
     {
       "id": "e18",
@@ -548,7 +548,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 5,
+      "wall_ms": 7,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -572,7 +572,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -595,7 +595,7 @@
       "decision_path": "rules",
       "fallback_reason": "llm_disabled",
       "provider": null,
-      "latency_ms": 2,
+      "latency_ms": 1,
       "wall_ms": 7,
       "llm_calls": 0,
       "tool_calls": 0,
@@ -620,7 +620,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 5,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -644,7 +644,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 5,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -668,7 +668,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -692,7 +692,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -716,7 +716,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -740,7 +740,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -764,7 +764,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -775,7 +775,7 @@
         "nausea_vomiting#self-care",
         "nausea_vomiting#get-emergency-help-if"
       ],
-      "explanation": "Being unable to keep fluids down or not passing urine are signs of dehydration. Based on nausea vomiting and your answers, this can likely be managed at home with self-care."
+      "explanation": "Being unable to keep fluids down or not passing urine are signs of dehydration. That warning sign sets the level to Urgent. On its own, the rule-based assessment would have said HomeCare: Based on nausea vomiting and your answers, this can likely be managed at home with self-care."
     },
     {
       "id": "u08",
@@ -790,7 +790,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -814,7 +814,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 7,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -825,7 +825,7 @@
         "headache#self-care",
         "headache#get-emergency-help-if"
       ],
-      "explanation": "Headache with changes in vision should be checked promptly. Based on headache and your answers, this can likely be managed at home with self-care."
+      "explanation": "Headache with changes in vision should be checked promptly. That warning sign sets the level to Urgent. On its own, the rule-based assessment would have said HomeCare: Based on headache and your answers, this can likely be managed at home with self-care."
     },
     {
       "id": "u10",
@@ -840,7 +840,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -864,7 +864,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -888,7 +888,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -912,7 +912,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -936,7 +936,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -947,7 +947,7 @@
         "shortness_of_breath#self-care",
         "palpitations#get-emergency-help-if"
       ],
-      "explanation": "Breathlessness with leg swelling should be checked promptly. Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+      "explanation": "Breathlessness with leg swelling should be checked promptly. That warning sign sets the level to Urgent. On its own, the rule-based assessment would have said HomeCare: Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
     },
     {
       "id": "u15",
@@ -962,7 +962,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -986,7 +986,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -1010,7 +1010,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -1034,7 +1034,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -1045,7 +1045,7 @@
         "cough#self-care",
         "cough#get-emergency-help-if"
       ],
-      "explanation": "Coughing up blood should be checked by a doctor promptly. Based on cough and your answers, this can likely be managed at home with self-care."
+      "explanation": "Coughing up blood should be checked by a doctor promptly. That warning sign sets the level to Urgent. On its own, the rule-based assessment would have said HomeCare: Based on cough and your answers, this can likely be managed at home with self-care."
     },
     {
       "id": "u19",
@@ -1060,7 +1060,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 5,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -1086,7 +1086,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 5,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [
@@ -1112,7 +1112,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -1136,7 +1136,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -1160,16 +1160,16 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
       "citations": [
         "sore_throat#see-a-doctor-soon-if",
         "sore_throat#self-care",
-        "fever#see-a-doctor-soon-if"
+        "sore_throat#get-emergency-help-if"
       ],
-      "explanation": "Based on fever, sore throat and your answers, this can likely be managed at home with self-care."
+      "explanation": "Based on sore throat and your answers, this can likely be managed at home with self-care."
     },
     {
       "id": "h04",
@@ -1184,7 +1184,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -1208,7 +1208,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -1232,7 +1232,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -1256,7 +1256,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 7,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -1280,7 +1280,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -1304,7 +1304,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 5,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -1345,23 +1345,23 @@
       "expected": "HomeCare",
       "tag": "judgement",
       "rationale": "Heartburn.",
-      "predicted": "Urgent",
-      "proposed": "Urgent",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
       "escalated": false,
       "decision_path": "rules",
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 5,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
       "citations": [
-        "chest_pain#get-emergency-help-if",
         "chest_pain#self-care",
+        "chest_pain#get-emergency-help-if",
         "chest_pain#see-a-doctor-soon-if"
       ],
-      "explanation": "Based on chest pain and your answers, a doctor should see you soon."
+      "explanation": "Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
     },
     {
       "id": "h12",
@@ -1376,7 +1376,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 5,
+      "wall_ms": 4,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -1400,7 +1400,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 5,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -1424,7 +1424,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 5,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -1448,7 +1448,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 5,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -1472,7 +1472,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -1496,7 +1496,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 7,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -1520,7 +1520,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
@@ -1544,16 +1544,16 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],
       "citations": [
         "cough#see-a-doctor-soon-if",
-        "fever#see-a-doctor-soon-if",
-        "cough#self-care"
+        "cough#self-care",
+        "fever#see-a-doctor-soon-if"
       ],
-      "explanation": "Based on fever, cough and your answers, this can likely be managed at home with self-care."
+      "explanation": "Based on cough and your answers, this can likely be managed at home with self-care."
     },
     {
       "id": "h20",
@@ -1568,7 +1568,7 @@
       "fallback_reason": "llm_disabled",
       "provider": null,
       "latency_ms": 1,
-      "wall_ms": 4,
+      "wall_ms": 6,
       "llm_calls": 0,
       "tool_calls": 0,
       "red_flags": [],

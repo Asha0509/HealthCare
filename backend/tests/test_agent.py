@@ -124,3 +124,11 @@ def test_run_is_logged(no_llm):
     assess(_case(), session_id="logged", source="eval")
     runs = observability.recent_runs(5)
     assert runs[0]["session_id"] == "logged" and runs[0]["source"] == "eval"
+
+
+def test_escalated_explanation_does_not_contradict_level(no_llm):
+    r = assess(_case(complaint="chest pain and sweating", symptoms=["chest_pain"], duration_hours=None))
+    assert r["triage_label"] == "Emergency" and r["escalated"]
+    assert r["explanation_text"].startswith("Chest pain together with")
+    assert "sets the level to Emergency" in r["explanation_text"]
+    assert "no warning signs found in your answers" not in r["key_factors"]

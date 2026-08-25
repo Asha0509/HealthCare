@@ -31,6 +31,7 @@ from services.rag import retriever
 
 LABELS = ["HomeCare", "Urgent", "Emergency"]
 MAX_LLM_TURNS = 6
+NO_WARNING_FACTOR = "no warning signs found in your answers"
 
 ACTIONS = {
     "Emergency": "Call emergency services (112) or go to the nearest emergency department now.",
@@ -261,7 +262,7 @@ def rules_assessment(case: Case) -> Dict:
         label = red_flags.escalate(label, [red_flags.RedFlag("fev", "Urgent", "", "")])
         factors.append("fever lasting more than three days")
     if not factors:
-        factors.append("no warning signs found in your answers")
+        factors.append(NO_WARNING_FACTOR)
     names = ", ".join(s.replace("_", " ") for s in case.symptoms[:3]) or "the symptoms you described"
     explanation = {
         "Emergency": f"Your answers about {names} include signs that need emergency assessment.",
@@ -365,7 +366,11 @@ def assess(case: Case, session_id: Optional[str] = None, source: str = "web", us
     if escalated:
         top = max(flags, key=lambda f: red_flags.LEVELS[f.level])
         base["recommended_action"] = ACTIONS[final]
-        base["explanation"] = (f"{top.reason} {base['explanation']}").strip()
+        source = "AI agent" if decision_path == "agent" else "rule-based assessment"
+        base["explanation"] = (f"{top.reason} That warning sign sets the level to {final}. "
+                               f"On its own, the {source} would have said {proposed}"
+                               + (f": {base['explanation']}" if base["explanation"] else "."))
+        base["key_factors"] = [k for k in base.get("key_factors", []) if k != NO_WARNING_FACTOR]
         trace.append({"kind": "rule", "name": "safety_merge",
                       "summary": f"escalated {proposed} -> {final} by {top.rule_id}"})
         if decision_path == "rules":
