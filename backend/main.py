@@ -5,14 +5,15 @@ AI-Powered Clinical Triage & Holistic Recommendation System
 
 import os
 import sys
+
 sys.path.insert(0, os.path.dirname(__file__))
 
+from core.config import settings
+from core.logging import app_logger
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from core.config import settings
-from core.logging import app_logger
 from api import facilities, system, triage
 
 app = FastAPI(
@@ -64,7 +65,7 @@ async def health():
 async def startup():
     app_logger.info(f"Starting {settings.APP_NAME}...")
     os.makedirs("logs", exist_ok=True)
-    
+
     from db.database import init_db
     await init_db()
     # Load the knowledge base + embedding model now, not on the first patient's request.

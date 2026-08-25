@@ -8,8 +8,8 @@ Manages patient context across the session lifecycle:
 """
 
 import json
-import uuid
-from typing import Dict, List, Optional
+from typing import Dict, Optional
+
 from core.config import settings
 from core.logging import app_logger
 

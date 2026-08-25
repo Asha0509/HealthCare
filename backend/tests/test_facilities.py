@@ -1,5 +1,4 @@
 import pytest
-
 from services import facilities as f
 
 ELEMENTS = [
@@ -40,7 +39,7 @@ async def test_nearby_widens_radius_and_caches(monkeypatch):
 
     async def fake_overpass(query):
         calls.append(query)
-        return ELEMENTS[:2] if "around:3000" in query else ELEMENTS[:2] + [
+        return ELEMENTS[:2] if "around:3000" in query else [*ELEMENTS[:2],
             {"type": "node", "id": 9, "lat": 17.39, "lon": 78.49, "tags": {"amenity": "hospital", "name": "Third"}}]
 
     monkeypatch.setattr(f, "_overpass", fake_overpass)

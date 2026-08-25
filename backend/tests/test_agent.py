@@ -1,5 +1,4 @@
 from conftest import reply, tool_call
-
 from services import observability
 from services.agent import Case, assess
 
@@ -23,7 +22,7 @@ def _happy_script(label="HomeCare", cite=("sore_throat#self-care",)):
             "key_factors": ["short duration", "no warning signs"],
             "conditions_to_consider": ["viral pharyngitis"],
             "self_care": ["warm salt-water gargles"],
-            "citations": list(cite) + ["made_up#source"],
+            "citations": [*cite, "made_up#source"],
         }, "c3")]),
     ]
 
@@ -54,7 +53,7 @@ def test_red_flag_escalates_agent_answer(fake_llm):
 
 
 def test_failover_to_second_provider(fake_llm):
-    script = fake_llm(_happy_script(), fail_providers={"groq"})
+    fake_llm(_happy_script(), fail_providers={"groq"})
     r = assess(_case())
     assert r["decision_path"] == "agent" and r["provider"] == "nvidia_nim"
     calls = observability.recent_calls(20)

@@ -1,12 +1,10 @@
-import os
 
 import httpx
 import pytest
 import pytest_asyncio
 from conftest import reply, tool_call
-
-from main import app
 from db.database import init_db
+from main import app
 from services import facilities, observability
 
 

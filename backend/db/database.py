@@ -1,10 +1,11 @@
-from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, Text, JSON, text
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import declarative_base, sessionmaker
-from sqlalchemy.exc import OperationalError
-from datetime import datetime
 import uuid
+from datetime import datetime
+
 from core.config import settings
+from sqlalchemy import JSON, Boolean, Column, DateTime, Float, Integer, String, Text, text
+from sqlalchemy.exc import OperationalError
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 # Use JSON for both SQLite and PostgreSQL compatibility
 # UUID stored as String for SQLite compatibility

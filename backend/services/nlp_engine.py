@@ -11,12 +11,14 @@ Performs:
   7. Language detection
 """
 
-import re
 import json
 import os
-from typing import List, Dict, Optional, Tuple
+import re
+from typing import Dict, List, Optional, Tuple
+
 from core.config import settings
 from core.logging import app_logger
+
 from services.llm_client import generate_json_with_fallback
 
 # ── Symptom synonym map (built from knowledge graph) ──
@@ -25,7 +27,7 @@ SYMPTOM_KEYWORDS: Dict[str, str] = {}
 def _load_knowledge_graph() -> Dict:
     path = os.path.join(settings.DATA_DIR, "symptom_disease_graph.json")
     try:
-        with open(path, "r") as f:
+        with open(path) as f:
             return json.load(f)
     except Exception as e:
         app_logger.error(f"Failed to load knowledge graph: {e}")
@@ -64,7 +66,7 @@ def _get_valid_symptoms() -> List[str]:
 # ── Gemini API for symptom extraction ──
 def extract_symptoms_gemini(text: str) -> List[str]:
     """Use LLM to extract symptoms (Gemini primary, NVIDIA NIM fallback)."""
-    
+
     valid_symptoms = _get_valid_symptoms()
     prompt = f"""Extract medical symptoms from this text. Return ONLY a JSON array of symptom names.
 Valid symptoms to look for: {', '.join(valid_symptoms)}

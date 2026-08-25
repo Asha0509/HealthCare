@@ -16,7 +16,6 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
 import numpy as np
-
 from core.config import settings
 from core.logging import app_logger
 
@@ -81,7 +80,7 @@ def load_chunks(kb_dir: str = KB_DIR) -> List[Chunk]:
 
 
 _WORD = re.compile(r"[a-z]+")
-_STOP = set("a an the and or of to in on for with is are be if you your it this that as at by from not can do".split())
+_STOP = set(["a", "an", "the", "and", "or", "of", "to", "in", "on", "for", "with", "is", "are", "be", "if", "you", "your", "it", "this", "that", "as", "at", "by", "from", "not", "can", "do"])
 
 
 def _tokens(text: str) -> List[str]:

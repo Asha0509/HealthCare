@@ -1,5 +1,4 @@
 import pytest
-
 from services import red_flags as rf
 
 EMERGENCY_TEXTS = [

@@ -12,9 +12,11 @@ This is the Adaptive Questioning Engine from the system architecture.
 
 import json
 import os
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
+
 from core.config import settings
 from core.logging import app_logger
+
 from services.llm_client import generate_json_with_fallback, has_any_provider
 
 _kg: Optional[Dict] = None
@@ -24,7 +26,7 @@ def _get_kg() -> Dict:
     global _kg
     if _kg is None:
         path = os.path.join(settings.DATA_DIR, "symptom_disease_graph.json")
-        with open(path, "r") as f:
+        with open(path) as f:
             _kg = json.load(f)
     return _kg
 
@@ -49,7 +51,7 @@ async def filter_questions_with_gemini(
         answered_summary = "\n".join(answered_items)
 
     question_texts = [f"{i+1}. [{q['id']}] {q['text']}" for i, q in enumerate(questions)]
-    
+
     prompt = f"""You are a medical triage assistant filtering follow-up questions.
 
 Patient's initial complaint: "{chief_complaint}"
@@ -72,6 +74,7 @@ Only return the JSON array, nothing else."""
     try:
         # The LLM client is synchronous; run it off the event loop.
         from fastapi.concurrency import run_in_threadpool
+
         from services import observability
         with observability.tagged(observability.current_session.get(), "question_filter"):
             keep_ids, provider = await run_in_threadpool(
@@ -97,7 +100,7 @@ def get_questions_for_symptoms(symptoms: List[str], chief_complaint: str = "") -
     kg = _get_kg()
     questions = []
     seen_ids = set()
-    
+
     # Convert symptoms and chief complaint to searchable terms
     # Build a set of all synonyms for all symptoms
     kg = _get_kg()
@@ -124,11 +127,11 @@ def get_questions_for_symptoms(symptoms: List[str], chief_complaint: str = "") -
         for q in node.get("follow_up_questions", []):
             if q["id"] in seen_ids:
                 continue
-                
+
             # Skip questions that ask about symptoms already mentioned
             q_text = q["text"].lower()
             is_redundant = False
-            
+
             for term in symptom_terms:
                 # Check various question patterns that would be redundant
                 if len(term) > 3:  # Only check meaningful terms
@@ -149,7 +152,7 @@ def get_questions_for_symptoms(symptoms: List[str], chief_complaint: str = "") -
                         if "how long" not in q_text and "when" not in q_text and "how severe" not in q_text:
                             is_redundant = True
                             break
-            
+
             if not is_redundant:
                 seen_ids.add(q["id"])
                 questions.append({**q, "symptom": symptom})
@@ -226,7 +229,6 @@ def bayesian_urgency_update(
     Adjusts urgency based on answer patterns.
     Returns: 'Emergency' | 'Urgent' | 'HomeCare'
     """
-    urgency_score = {"Emergency": 3, "Urgent": 2, "HomeCare": 1}
     reverse_map = {3: "Emergency", 2: "Urgent", 1: "HomeCare"}
 
     # Start from base

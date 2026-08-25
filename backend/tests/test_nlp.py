@@ -1,5 +1,4 @@
 import pytest
-
 from services import nlp_engine
 
 

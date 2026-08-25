@@ -1,0 +1,21 @@
+line-length = 120
+target-version = "py311"
+extend-exclude = ["backend/models_cache", "models", "frontend"]
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP", "RUF", "SIM"]
+ignore = [
+  "E501",    # long lines are handled by line-length where it matters
+  "UP006", "UP007", "UP035", "UP045",  # the codebase uses typing.List/Optional throughout
+  "B008",    # FastAPI Depends() in defaults
+  "RUF012",
+  "B904",    # HTTPException re-raises inside except blocks are deliberate; the cause is logged
+  "UP042",   # str+Enum keeps pydantic/JSON behaviour identical
+  "RUF001",  # typographic apostrophe is intentional in the red-flag text normaliser
+  "SIM102",
+]
+
+[lint.per-file-ignores]
+"backend/tests/*" = ["E402"]
+"evals/*" = ["E402"]
+"backend/main.py" = ["E402"]

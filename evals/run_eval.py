@@ -23,7 +23,7 @@ import json
 import os
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Dict, List
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -50,7 +50,7 @@ def pct(values: List[float], p: float):
     if not values:
         return None
     s = sorted(values)
-    return round(s[max(0, min(len(s) - 1, int(round(p / 100 * (len(s) - 1)))))], 1)
+    return round(s[max(0, min(len(s) - 1, round(p / 100 * (len(s) - 1))))], 1)
 
 
 def score(rows: List[Dict]) -> Dict:
@@ -181,7 +181,7 @@ def main() -> int:
     providers = sorted({r["provider"] for r in rows if r.get("provider")})
     report = {
         "pipeline": args.pipeline,
-        "run_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "run_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "target": args.base_url or "in-process",
         "providers": providers,
         "label_note": "Expected labels were written by the project author from public triage guidance; "

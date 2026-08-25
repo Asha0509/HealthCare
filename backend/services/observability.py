@@ -141,7 +141,7 @@ def _pct(values: List[float], p: float) -> Optional[float]:
     if not values:
         return None
     s = sorted(values)
-    k = max(0, min(len(s) - 1, int(round(p / 100 * (len(s) - 1)))))
+    k = max(0, min(len(s) - 1, round(p / 100 * (len(s) - 1))))
     return round(s[k], 1)
 
 
@@ -216,7 +216,7 @@ def recent_calls(limit: int = 50) -> List[Dict[str, Any]]:
             " completion_tokens, tool_calls FROM llm_calls ORDER BY ts DESC LIMIT ?", (limit,)).fetchall()
     keys = ["ts", "session_id", "purpose", "provider", "model", "status", "error", "latency_ms",
             "prompt_tokens", "completion_tokens", "tool_calls"]
-    return [dict(zip(keys, r)) for r in rows]
+    return [dict(zip(keys, r, strict=False)) for r in rows]
 
 
 def recent_runs(limit: int = 50) -> List[Dict[str, Any]]:
@@ -228,7 +228,7 @@ def recent_runs(limit: int = 50) -> List[Dict[str, Any]]:
             "latency_ms", "llm_calls", "tool_calls", "source"]
     out = []
     for r in rows:
-        d = dict(zip(keys, r))
+        d = dict(zip(keys, r, strict=False))
         d["red_flags"] = json.loads(d["red_flags"] or "[]")
         d["escalated"] = bool(d["escalated"])
         out.append(d)

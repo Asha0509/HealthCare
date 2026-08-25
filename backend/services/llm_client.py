@@ -16,9 +16,9 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import httpx
-
 from core.config import settings
 from core.logging import app_logger
+
 from services import observability
 
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"

@@ -13,8 +13,8 @@ os.environ["GROQ_API_KEY"] = ""
 os.environ["NVIDIA_NIM_API_KEY"] = ""
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.config import settings  # noqa: E402
-from services import llm_client, observability  # noqa: E402
+from core.config import settings
+from services import llm_client, observability
 
 
 @pytest.fixture(autouse=True)

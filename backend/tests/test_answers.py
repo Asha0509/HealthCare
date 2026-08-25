@@ -1,5 +1,4 @@
 import pytest
-
 from services import answers as a
 
 YN = {"id": "q", "type": "yesno"}

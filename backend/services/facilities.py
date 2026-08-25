@@ -14,7 +14,6 @@ import time
 from typing import Any, Dict, List, Optional, Tuple
 
 import httpx
-
 from core.logging import app_logger
 
 OVERPASS_URLS = [

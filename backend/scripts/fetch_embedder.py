@@ -8,9 +8,8 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from model2vec import StaticModel  # noqa: E402
-
-from services.rag import EMBED_MODEL_DIR, EMBED_MODEL_ID  # noqa: E402
+from model2vec import StaticModel
+from services.rag import EMBED_MODEL_DIR, EMBED_MODEL_ID
 
 if __name__ == "__main__":
     if os.path.isdir(EMBED_MODEL_DIR):
