@@ -1,0 +1,1583 @@
+{
+  "pipeline": "rules",
+  "run_at": "2026-10-07T09:47:35+00:00",
+  "target": "in-process",
+  "providers": [],
+  "label_note": "Expected labels were written by the project author from public triage guidance; they are not clinically validated.",
+  "metrics": {
+    "cases": 60,
+    "errors": 0,
+    "accuracy": 0.717,
+    "macro_f1": 0.709,
+    "emergency_recall": 0.85,
+    "under_triage_rate": 0.25,
+    "over_triage_rate": 0.033,
+    "critical_misses": 2,
+    "critical_miss_ids": [
+      "e18",
+      "e20"
+    ],
+    "red_flag_cases": {
+      "cases": 23,
+      "critical_misses": 0,
+      "emergency_recall": 1.0
+    },
+    "escalated_by_safety_rules": 19,
+    "fallback_rate": 0.983,
+    "latency_ms_p50": 1,
+    "latency_ms_p95": 1,
+    "avg_llm_calls": 0.0,
+    "avg_tool_calls": 0.0,
+    "per_class": {
+      "HomeCare": {
+        "precision": 0.562,
+        "recall": 0.9,
+        "f1": 0.692,
+        "support": 20
+      },
+      "Urgent": {
+        "precision": 0.727,
+        "recall": 0.4,
+        "f1": 0.516,
+        "support": 20
+      },
+      "Emergency": {
+        "precision": 1.0,
+        "recall": 0.85,
+        "f1": 0.919,
+        "support": 20
+      }
+    },
+    "confusion": {
+      "HomeCare": {
+        "HomeCare": 18,
+        "Urgent": 2,
+        "Emergency": 0
+      },
+      "Urgent": {
+        "HomeCare": 12,
+        "Urgent": 8,
+        "Emergency": 0
+      },
+      "Emergency": {
+        "HomeCare": 2,
+        "Urgent": 1,
+        "Emergency": 17
+      }
+    },
+    "by_tag": {
+      "judgement": {
+        "cases": 37,
+        "accuracy": 0.541
+      },
+      "red_flag_age": {
+        "cases": 2,
+        "accuracy": 1.0
+      },
+      "red_flag_answer": {
+        "cases": 7,
+        "accuracy": 1.0
+      },
+      "red_flag_text": {
+        "cases": 14,
+        "accuracy": 1.0
+      }
+    }
+  },
+  "gates": {
+    "scope": "red_flag cases",
+    "critical_misses": 0,
+    "emergency_recall_min": 1.0
+  },
+  "gate_failures": [],
+  "results": [
+    {
+      "id": "e01",
+      "complaint": "Crushing chest pain for the last 20 minutes and I'm sweating",
+      "expected": "Emergency",
+      "tag": "red_flag_text",
+      "rationale": "Classic heart attack presentation.",
+      "predicted": "Emergency",
+      "proposed": "Urgent",
+      "escalated": true,
+      "decision_path": "red_flag",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 293,
+      "wall_ms": 314,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "cardiac_chest_pain_severe",
+        "cardiac_chest_pain_plus"
+      ],
+      "citations": [
+        "chest_pain#get-emergency-help-if",
+        "heart_attack#recognise-it",
+        "chest_pain#self-care"
+      ],
+      "explanation": "Severe or crushing chest pain can be a heart attack. Based on chest pain and your answers, a doctor should see you soon."
+    },
+    {
+      "id": "e02",
+      "complaint": "My mother's face is drooping and her speech is slurred, started 30 minutes ago",
+      "expected": "Emergency",
+      "tag": "red_flag_text",
+      "rationale": "FAST stroke signs.",
+      "predicted": "Emergency",
+      "proposed": "HomeCare",
+      "escalated": true,
+      "decision_path": "red_flag",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 6,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "stroke_signs"
+      ],
+      "citations": [
+        "dizziness#get-emergency-help-if",
+        "stroke#recognise-it",
+        "shortness_of_breath#get-emergency-help-if"
+      ],
+      "explanation": "Face drooping, arm weakness, slurred speech or sudden confusion are stroke warning signs (FAST). Every minute counts. Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "e03",
+      "complaint": "I can't breathe properly and my lips are turning blue",
+      "expected": "Emergency",
+      "tag": "red_flag_text",
+      "rationale": "Severe respiratory distress with cyanosis.",
+      "predicted": "Emergency",
+      "proposed": "Urgent",
+      "escalated": true,
+      "decision_path": "red_flag",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 5,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "breathing_severe"
+      ],
+      "citations": [
+        "shortness_of_breath#get-emergency-help-if",
+        "shortness_of_breath#self-care",
+        "heart_attack#recognise-it"
+      ],
+      "explanation": "Serious difficulty breathing needs emergency care. Based on shortness of breath and your answers, a doctor should see you soon."
+    },
+    {
+      "id": "e04",
+      "complaint": "Sudden worst headache of my life while lifting weights",
+      "expected": "Emergency",
+      "tag": "red_flag_text",
+      "rationale": "Thunderclap headache, possible brain bleed.",
+      "predicted": "Emergency",
+      "proposed": "Urgent",
+      "escalated": true,
+      "decision_path": "red_flag",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "thunderclap_headache"
+      ],
+      "citations": [
+        "headache#get-emergency-help-if",
+        "stroke#recognise-it",
+        "headache#self-care"
+      ],
+      "explanation": "A sudden, extremely severe 'worst ever' headache can signal bleeding in the brain. Based on headache and your answers, a doctor should see you soon."
+    },
+    {
+      "id": "e05",
+      "complaint": "High fever, stiff neck and the light hurts my eyes",
+      "expected": "Emergency",
+      "tag": "red_flag_text",
+      "rationale": "Meningitis signs.",
+      "predicted": "Emergency",
+      "proposed": "HomeCare",
+      "escalated": true,
+      "decision_path": "red_flag",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "meningitis_signs"
+      ],
+      "citations": [
+        "meningitis#recognise-it",
+        "fever#self-care",
+        "fever#get-emergency-help-if"
+      ],
+      "explanation": "Fever with a stiff neck, a rash that doesn't fade, or confusion can be meningitis. Based on fever and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "e06",
+      "complaint": "My lips and tongue are swelling after eating peanuts",
+      "expected": "Emergency",
+      "tag": "red_flag_text",
+      "rationale": "Anaphylaxis.",
+      "predicted": "Emergency",
+      "proposed": "HomeCare",
+      "escalated": true,
+      "decision_path": "red_flag",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "anaphylaxis"
+      ],
+      "citations": [
+        "anaphylaxis#recognise-it",
+        "sore_throat#see-a-doctor-soon-if",
+        "rash#get-emergency-help-if"
+      ],
+      "explanation": "Swelling of the face, lips or throat, or trouble breathing after an allergy trigger, can be anaphylaxis. Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "e07",
+      "complaint": "I have been vomiting blood since this morning",
+      "expected": "Emergency",
+      "tag": "red_flag_text",
+      "rationale": "Upper GI bleed.",
+      "predicted": "Emergency",
+      "proposed": "HomeCare",
+      "escalated": true,
+      "decision_path": "red_flag",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "severe_bleeding"
+      ],
+      "citations": [
+        "nausea_vomiting#get-emergency-help-if",
+        "nausea_vomiting#self-care",
+        "nausea_vomiting#see-a-doctor-soon-if"
+      ],
+      "explanation": "Heavy bleeding that won't stop, or vomiting or coughing up blood, needs emergency care. Based on nausea vomiting and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "e08",
+      "complaint": "I took 20 paracetamol tablets an hour ago, too many pills",
+      "expected": "Emergency",
+      "tag": "red_flag_text",
+      "rationale": "Overdose; may look well at first.",
+      "predicted": "Emergency",
+      "proposed": "HomeCare",
+      "escalated": true,
+      "decision_path": "red_flag",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 5,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "poisoning_overdose"
+      ],
+      "citations": [
+        "poisoning#recognise-it",
+        "headache#self-care",
+        "sore_throat#self-care"
+      ],
+      "explanation": "A possible overdose or poisoning needs emergency help right away. Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "e09",
+      "complaint": "I am 10 weeks pregnant with heavy bleeding and cramps",
+      "expected": "Emergency",
+      "tag": "red_flag_text",
+      "rationale": "Bleeding in pregnancy.",
+      "predicted": "Emergency",
+      "proposed": "Urgent",
+      "escalated": true,
+      "decision_path": "red_flag",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 5,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "severe_bleeding",
+        "pregnancy_bleeding_pain"
+      ],
+      "citations": [
+        "bleeding#get-emergency-help-if",
+        "bleeding#see-a-doctor-soon-if",
+        "bleeding#self-care"
+      ],
+      "explanation": "Heavy bleeding that won't stop, or vomiting or coughing up blood, needs emergency care. Based on bleeding and your answers, a doctor should see you soon."
+    },
+    {
+      "id": "e10",
+      "complaint": "I keep having thoughts of ending my life",
+      "expected": "Emergency",
+      "tag": "red_flag_text",
+      "rationale": "Suicidal ideation: crisis response.",
+      "predicted": "Emergency",
+      "proposed": "Emergency",
+      "escalated": false,
+      "decision_path": "red_flag",
+      "fallback_reason": null,
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 5,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "crisis_self_harm"
+      ],
+      "citations": [
+        "mental_health_crisis#what-to-do-now",
+        "mental_health_crisis#stay-safe"
+      ],
+      "explanation": "You mentioned thoughts of ending your life or harming yourself. You deserve support right now, and talking to someone can help."
+    },
+    {
+      "id": "e11",
+      "complaint": "Chest pain and shortness of breath since an hour",
+      "expected": "Emergency",
+      "tag": "red_flag_text",
+      "rationale": "Chest pain with breathlessness.",
+      "predicted": "Emergency",
+      "proposed": "Urgent",
+      "escalated": true,
+      "decision_path": "red_flag",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "cardiac_chest_pain_plus",
+        "older_adult_cardiorespiratory"
+      ],
+      "citations": [
+        "chest_pain#get-emergency-help-if",
+        "heart_attack#recognise-it",
+        "shortness_of_breath#get-emergency-help-if"
+      ],
+      "explanation": "Chest pain together with breathlessness, sweating, or pain spreading to the arm or jaw are warning signs of a heart attack. Based on chest pain, shortness of breath and your answers, a doctor should see you soon."
+    },
+    {
+      "id": "e12",
+      "complaint": "He had a seizure and now he is confused",
+      "expected": "Emergency",
+      "tag": "red_flag_text",
+      "rationale": "Seizure with altered state.",
+      "predicted": "Emergency",
+      "proposed": "HomeCare",
+      "escalated": true,
+      "decision_path": "red_flag",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 5,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "unconscious_seizure"
+      ],
+      "citations": [
+        "fever#get-emergency-help-if",
+        "headache#get-emergency-help-if",
+        "shortness_of_breath#get-emergency-help-if"
+      ],
+      "explanation": "Fainting, loss of consciousness or a seizure needs urgent assessment. Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "e13",
+      "complaint": "My 2 month old baby has a fever of 38.5",
+      "expected": "Emergency",
+      "tag": "red_flag_age",
+      "rationale": "Any fever under 3 months.",
+      "predicted": "Emergency",
+      "proposed": "Urgent",
+      "escalated": true,
+      "decision_path": "red_flag",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 5,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "infant_fever"
+      ],
+      "citations": [
+        "fever#see-a-doctor-soon-if",
+        "fever#get-emergency-help-if",
+        "fever#self-care"
+      ],
+      "explanation": "Any fever in a baby under 12 months needs prompt medical assessment. Based on fever and your answers, a doctor should see you soon."
+    },
+    {
+      "id": "e14",
+      "complaint": "My arm is bleeding from a deep cut",
+      "expected": "Emergency",
+      "tag": "red_flag_answer",
+      "rationale": "Bleeding not controlled by pressure.",
+      "predicted": "Emergency",
+      "proposed": "Urgent",
+      "escalated": true,
+      "decision_path": "red_flag",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "answer_bl_stop"
+      ],
+      "citations": [
+        "bleeding#see-a-doctor-soon-if",
+        "bleeding#get-emergency-help-if",
+        "bleeding#self-care"
+      ],
+      "explanation": "Bleeding that can't be stopped with pressure needs emergency care. Based on bleeding and your answers, a doctor should see you soon."
+    },
+    {
+      "id": "e15",
+      "complaint": "Chest pain since an hour",
+      "expected": "Emergency",
+      "tag": "red_flag_answer",
+      "rationale": "Chest pain radiating to jaw/arm.",
+      "predicted": "Emergency",
+      "proposed": "Emergency",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "answer_cp_radiation"
+      ],
+      "citations": [
+        "chest_pain#get-emergency-help-if",
+        "chest_pain#see-a-doctor-soon-if",
+        "chest_pain#self-care"
+      ],
+      "explanation": "Your answers about chest pain include signs that need emergency assessment."
+    },
+    {
+      "id": "e16",
+      "complaint": "Lower back pain for two days",
+      "expected": "Emergency",
+      "tag": "red_flag_answer",
+      "rationale": "Possible cauda equina.",
+      "predicted": "Emergency",
+      "proposed": "HomeCare",
+      "escalated": true,
+      "decision_path": "red_flag",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "answer_bp_bladder"
+      ],
+      "citations": [
+        "back_pain#get-emergency-help-if",
+        "back_pain#self-care",
+        "abdominal_pain#see-a-doctor-soon-if"
+      ],
+      "explanation": "Back pain with loss of bladder or bowel control needs emergency care. Based on back pain and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "e17",
+      "complaint": "Sore throat and now I find it hard to swallow my own spit",
+      "expected": "Emergency",
+      "tag": "red_flag_answer",
+      "rationale": "Airway compromise.",
+      "predicted": "Emergency",
+      "proposed": "HomeCare",
+      "escalated": true,
+      "decision_path": "red_flag",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 5,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "answer_st_breathe"
+      ],
+      "citations": [
+        "sore_throat#get-emergency-help-if",
+        "sore_throat#see-a-doctor-soon-if",
+        "sore_throat#self-care"
+      ],
+      "explanation": "A sore throat with difficulty breathing needs emergency care. Based on sore throat and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "e18",
+      "complaint": "My father is 70 and suddenly can't lift his right arm and his words are all jumbled",
+      "expected": "Emergency",
+      "tag": "judgement",
+      "rationale": "Stroke described without textbook keywords.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 5,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "shortness_of_breath#get-emergency-help-if",
+        "stroke#recognise-it",
+        "joint_pain#get-emergency-help-if"
+      ],
+      "explanation": "Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "e19",
+      "complaint": "Severe tearing pain in my chest that goes through to my back",
+      "expected": "Emergency",
+      "tag": "judgement",
+      "rationale": "Possible aortic dissection; wording avoids 'chest pain'.",
+      "predicted": "Urgent",
+      "proposed": "Urgent",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "chest_pain#get-emergency-help-if",
+        "abdominal_pain#get-emergency-help-if",
+        "chest_pain#self-care"
+      ],
+      "explanation": "Based on the symptoms you described and your answers, a doctor should see you soon."
+    },
+    {
+      "id": "e20",
+      "complaint": "My throat feels like it is closing up after a bee sting and my voice is hoarse",
+      "expected": "Emergency",
+      "tag": "judgement",
+      "rationale": "Anaphylaxis described indirectly.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 2,
+      "wall_ms": 7,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "sore_throat#get-emergency-help-if",
+        "anaphylaxis#recognise-it",
+        "sore_throat#self-care"
+      ],
+      "explanation": "Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "u01",
+      "complaint": "Fever of 39 C for four days with body aches and headache",
+      "expected": "Urgent",
+      "tag": "judgement",
+      "rationale": "Prolonged high fever; needs testing (dengue/malaria in India).",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 5,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "fever#see-a-doctor-soon-if",
+        "body_pain#see-a-doctor-soon-if",
+        "headache#self-care"
+      ],
+      "explanation": "Based on body pain, headache, fever and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "u02",
+      "complaint": "Burning when I pee, fever and pain in my lower back",
+      "expected": "Urgent",
+      "tag": "judgement",
+      "rationale": "Possible kidney infection.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "fever#see-a-doctor-soon-if",
+        "fever#self-care",
+        "abdominal_pain#see-a-doctor-soon-if"
+      ],
+      "explanation": "Based on fever and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "u03",
+      "complaint": "Cough for four weeks and I've lost weight",
+      "expected": "Urgent",
+      "tag": "judgement",
+      "rationale": "Chronic cough with weight loss.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "cough#see-a-doctor-soon-if",
+        "cough#self-care",
+        "cough#get-emergency-help-if"
+      ],
+      "explanation": "Based on cough and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "u04",
+      "complaint": "Ear pain and fever since yesterday",
+      "expected": "Urgent",
+      "tag": "judgement",
+      "rationale": "Child with ear infection signs.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "fever#see-a-doctor-soon-if",
+        "fever#self-care",
+        "rash#see-a-doctor-soon-if"
+      ],
+      "explanation": "Based on fever and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "u05",
+      "complaint": "My knee is red, swollen and very painful and I have a fever",
+      "expected": "Urgent",
+      "tag": "judgement",
+      "rationale": "Possible septic joint.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "joint_pain#get-emergency-help-if",
+        "fever#see-a-doctor-soon-if",
+        "fever#self-care"
+      ],
+      "explanation": "Based on fever and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "u06",
+      "complaint": "My asthma has been getting worse for two days, the inhaler helps a little",
+      "expected": "Urgent",
+      "tag": "judgement",
+      "rationale": "Worsening asthma, not yet severe.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "shortness_of_breath#self-care",
+        "shortness_of_breath#get-emergency-help-if",
+        "shortness_of_breath#see-a-doctor-soon-if"
+      ],
+      "explanation": "Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "u07",
+      "complaint": "Vomiting for two days and I can't keep water down",
+      "expected": "Urgent",
+      "tag": "red_flag_text",
+      "rationale": "Dehydration risk.",
+      "predicted": "Urgent",
+      "proposed": "HomeCare",
+      "escalated": true,
+      "decision_path": "red_flag",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "dehydration_signs"
+      ],
+      "citations": [
+        "nausea_vomiting#see-a-doctor-soon-if",
+        "nausea_vomiting#self-care",
+        "nausea_vomiting#get-emergency-help-if"
+      ],
+      "explanation": "Being unable to keep fluids down or not passing urine are signs of dehydration. Based on nausea vomiting and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "u08",
+      "complaint": "Rash spreading with blisters and fever",
+      "expected": "Urgent",
+      "tag": "judgement",
+      "rationale": "Blistering rash with fever.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "rash#see-a-doctor-soon-if",
+        "rash#get-emergency-help-if",
+        "fever#see-a-doctor-soon-if"
+      ],
+      "explanation": "Based on fever, rash and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "u09",
+      "complaint": "Headache for two days",
+      "expected": "Urgent",
+      "tag": "red_flag_answer",
+      "rationale": "Headache with vision change.",
+      "predicted": "Urgent",
+      "proposed": "HomeCare",
+      "escalated": true,
+      "decision_path": "red_flag",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "answer_headache_vision"
+      ],
+      "citations": [
+        "headache#see-a-doctor-soon-if",
+        "headache#self-care",
+        "headache#get-emergency-help-if"
+      ],
+      "explanation": "Headache with changes in vision should be checked promptly. Based on headache and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "u10",
+      "complaint": "Stomach pain and diarrhoea for three days with a bit of fever",
+      "expected": "Urgent",
+      "tag": "judgement",
+      "rationale": "Diarrhoea >2 days with fever.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "abdominal_pain#see-a-doctor-soon-if",
+        "fever#see-a-doctor-soon-if",
+        "abdominal_pain#get-emergency-help-if"
+      ],
+      "explanation": "Based on fever, abdominal pain and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "u11",
+      "complaint": "Palpitations that keep coming back this week",
+      "expected": "Urgent",
+      "tag": "judgement",
+      "rationale": "Recurrent palpitations need ECG.",
+      "predicted": "Urgent",
+      "proposed": "Urgent",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "palpitations#see-a-doctor-soon-if",
+        "palpitations#get-emergency-help-if",
+        "palpitations#self-care"
+      ],
+      "explanation": "Based on palpitations and your answers, a doctor should see you soon."
+    },
+    {
+      "id": "u12",
+      "complaint": "Chest pain when I walk uphill that goes away when I rest, for two weeks",
+      "expected": "Urgent",
+      "tag": "judgement",
+      "rationale": "Exertional chest pain, stable pattern.",
+      "predicted": "Urgent",
+      "proposed": "Urgent",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "chest_pain#self-care",
+        "chest_pain#get-emergency-help-if",
+        "chest_pain#see-a-doctor-soon-if"
+      ],
+      "explanation": "Based on chest pain and your answers, a doctor should see you soon."
+    },
+    {
+      "id": "u13",
+      "complaint": "Sore throat with white patches on my tonsils and high fever",
+      "expected": "Urgent",
+      "tag": "judgement",
+      "rationale": "Possible strep throat.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "sore_throat#see-a-doctor-soon-if",
+        "sore_throat#self-care",
+        "fever#see-a-doctor-soon-if"
+      ],
+      "explanation": "Based on fever, sore throat and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "u14",
+      "complaint": "Getting short of breath",
+      "expected": "Urgent",
+      "tag": "red_flag_answer",
+      "rationale": "Breathlessness with leg swelling (heart failure?).",
+      "predicted": "Urgent",
+      "proposed": "HomeCare",
+      "escalated": true,
+      "decision_path": "red_flag",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "answer_sob_legs"
+      ],
+      "citations": [
+        "shortness_of_breath#see-a-doctor-soon-if",
+        "shortness_of_breath#self-care",
+        "palpitations#get-emergency-help-if"
+      ],
+      "explanation": "Breathlessness with leg swelling should be checked promptly. Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "u15",
+      "complaint": "Tired for a month, very thirsty and peeing a lot",
+      "expected": "Urgent",
+      "tag": "judgement",
+      "rationale": "Possible diabetes.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "fatigue#self-care",
+        "dehydration#get-help-if",
+        "palpitations#self-care"
+      ],
+      "explanation": "Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "u16",
+      "complaint": "Back pain going down my leg with numbness in my foot",
+      "expected": "Urgent",
+      "tag": "judgement",
+      "rationale": "Sciatica with neurological symptoms.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "back_pain#see-a-doctor-soon-if",
+        "back_pain#get-emergency-help-if",
+        "back_pain#self-care"
+      ],
+      "explanation": "Based on back pain and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "u17",
+      "complaint": "A dog bit my hand this morning",
+      "expected": "Urgent",
+      "tag": "judgement",
+      "rationale": "Animal bite: wound care and rabies assessment.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "joint_pain#see-a-doctor-soon-if",
+        "bleeding#see-a-doctor-soon-if",
+        "shortness_of_breath#see-a-doctor-soon-if"
+      ],
+      "explanation": "Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "u18",
+      "complaint": "I've had a cough for a week",
+      "expected": "Urgent",
+      "tag": "red_flag_answer",
+      "rationale": "Coughing up blood.",
+      "predicted": "Urgent",
+      "proposed": "HomeCare",
+      "escalated": true,
+      "decision_path": "red_flag",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "answer_cough_blood"
+      ],
+      "citations": [
+        "cough#see-a-doctor-soon-if",
+        "cough#self-care",
+        "cough#get-emergency-help-if"
+      ],
+      "explanation": "Coughing up blood should be checked by a doctor promptly. Based on cough and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "u19",
+      "complaint": "Fever, cough and getting breathless",
+      "expected": "Urgent",
+      "tag": "red_flag_age",
+      "rationale": "Older adult with chest infection signs.",
+      "predicted": "Urgent",
+      "proposed": "Urgent",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "older_adult_cardiorespiratory"
+      ],
+      "citations": [
+        "cough#see-a-doctor-soon-if",
+        "shortness_of_breath#see-a-doctor-soon-if",
+        "fever#see-a-doctor-soon-if"
+      ],
+      "explanation": "Based on fever, shortness of breath, cough and your answers, a doctor should see you soon."
+    },
+    {
+      "id": "u20",
+      "complaint": "Severe stomach pain since this afternoon",
+      "expected": "Urgent",
+      "tag": "red_flag_text",
+      "rationale": "Severe abdominal pain needs prompt review.",
+      "predicted": "Urgent",
+      "proposed": "Urgent",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [
+        "severe_abdominal"
+      ],
+      "citations": [
+        "abdominal_pain#get-emergency-help-if",
+        "abdominal_pain#self-care",
+        "abdominal_pain#see-a-doctor-soon-if"
+      ],
+      "explanation": "Based on abdominal pain and your answers, a doctor should see you soon."
+    },
+    {
+      "id": "h01",
+      "complaint": "Runny nose and sneezing for two days",
+      "expected": "HomeCare",
+      "tag": "judgement",
+      "rationale": "Common cold.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "headache#see-a-doctor-soon-if",
+        "shortness_of_breath#see-a-doctor-soon-if",
+        "anaphylaxis#recognise-it"
+      ],
+      "explanation": "Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "h02",
+      "complaint": "Mild headache after a long day at the screen",
+      "expected": "HomeCare",
+      "tag": "judgement",
+      "rationale": "Tension headache.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "headache#get-emergency-help-if",
+        "headache#see-a-doctor-soon-if",
+        "headache#self-care"
+      ],
+      "explanation": "Based on headache and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "h03",
+      "complaint": "Sore throat since yesterday, no fever",
+      "expected": "HomeCare",
+      "tag": "judgement",
+      "rationale": "Viral sore throat.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "sore_throat#see-a-doctor-soon-if",
+        "sore_throat#self-care",
+        "fever#see-a-doctor-soon-if"
+      ],
+      "explanation": "Based on fever, sore throat and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "h04",
+      "complaint": "Mild back ache after gardening",
+      "expected": "HomeCare",
+      "tag": "judgement",
+      "rationale": "Muscular strain.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "joint_pain#self-care",
+        "back_pain#see-a-doctor-soon-if",
+        "back_pain#get-emergency-help-if"
+      ],
+      "explanation": "Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "h05",
+      "complaint": "Dry cough for three days with a cold",
+      "expected": "HomeCare",
+      "tag": "judgement",
+      "rationale": "Viral cough.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "cough#self-care",
+        "cough#see-a-doctor-soon-if",
+        "cough#get-emergency-help-if"
+      ],
+      "explanation": "Based on cough and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "h06",
+      "complaint": "Mild diarrhoea since this morning, drinking fine",
+      "expected": "HomeCare",
+      "tag": "judgement",
+      "rationale": "Short self-limiting illness.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "dehydration#self-care",
+        "abdominal_pain#self-care",
+        "dehydration#get-help-if"
+      ],
+      "explanation": "Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "h07",
+      "complaint": "Feeling tired after sleeping badly this week",
+      "expected": "HomeCare",
+      "tag": "judgement",
+      "rationale": "Sleep-related fatigue.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "fatigue#see-a-doctor-soon-if",
+        "fatigue#self-care",
+        "fatigue#get-emergency-help-if"
+      ],
+      "explanation": "Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "h08",
+      "complaint": "Itchy rash on my hands after using a new soap",
+      "expected": "HomeCare",
+      "tag": "judgement",
+      "rationale": "Contact dermatitis.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "rash#self-care",
+        "rash#get-emergency-help-if",
+        "rash#see-a-doctor-soon-if"
+      ],
+      "explanation": "Based on rash and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "h09",
+      "complaint": "Mild fever of 37.8 since yesterday with body aches",
+      "expected": "HomeCare",
+      "tag": "judgement",
+      "rationale": "Short viral illness.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "fever#see-a-doctor-soon-if",
+        "body_pain#see-a-doctor-soon-if",
+        "fever#self-care"
+      ],
+      "explanation": "Based on body pain, fever and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "h10",
+      "complaint": "I twisted my ankle, mild pain but I can walk on it",
+      "expected": "HomeCare",
+      "tag": "judgement",
+      "rationale": "Minor sprain.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 5,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "joint_pain#self-care",
+        "back_pain#see-a-doctor-soon-if",
+        "abdominal_pain#get-emergency-help-if"
+      ],
+      "explanation": "Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "h11",
+      "complaint": "Acid reflux after a heavy dinner, no chest pain",
+      "expected": "HomeCare",
+      "tag": "judgement",
+      "rationale": "Heartburn.",
+      "predicted": "Urgent",
+      "proposed": "Urgent",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "chest_pain#get-emergency-help-if",
+        "chest_pain#self-care",
+        "chest_pain#see-a-doctor-soon-if"
+      ],
+      "explanation": "Based on chest pain and your answers, a doctor should see you soon."
+    },
+    {
+      "id": "h12",
+      "complaint": "Mild nausea after a large meal",
+      "expected": "HomeCare",
+      "tag": "judgement",
+      "rationale": "Overeating.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 5,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "nausea_vomiting#self-care",
+        "nausea_vomiting#get-emergency-help-if",
+        "nausea_vomiting#see-a-doctor-soon-if"
+      ],
+      "explanation": "Based on nausea vomiting and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "h13",
+      "complaint": "Sore muscles all over after my first gym session",
+      "expected": "HomeCare",
+      "tag": "judgement",
+      "rationale": "Exercise soreness.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "joint_pain#self-care",
+        "body_pain#self-care",
+        "joint_pain#see-a-doctor-soon-if"
+      ],
+      "explanation": "Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "h14",
+      "complaint": "Slightly dizzy when I stand up quickly, it passes in a few seconds",
+      "expected": "HomeCare",
+      "tag": "judgement",
+      "rationale": "Orthostatic dizziness, brief.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "dizziness#self-care",
+        "dehydration#get-help-if",
+        "stroke#what-to-do"
+      ],
+      "explanation": "Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "h15",
+      "complaint": "Itchy mosquito bites on my legs",
+      "expected": "HomeCare",
+      "tag": "judgement",
+      "rationale": "Insect bites.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "body_pain#see-a-doctor-soon-if",
+        "back_pain#get-emergency-help-if",
+        "fever#see-a-doctor-soon-if"
+      ],
+      "explanation": "Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "h16",
+      "complaint": "Blocked nose and mild pressure in my cheeks for three days",
+      "expected": "HomeCare",
+      "tag": "judgement",
+      "rationale": "Viral sinusitis.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "heart_attack#recognise-it",
+        "bleeding#self-care",
+        "shortness_of_breath#see-a-doctor-soon-if"
+      ],
+      "explanation": "Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "h17",
+      "complaint": "Mild period cramps, same as usual",
+      "expected": "HomeCare",
+      "tag": "judgement",
+      "rationale": "Typical dysmenorrhoea.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "abdominal_pain#self-care",
+        "fever#self-care",
+        "headache#see-a-doctor-soon-if"
+      ],
+      "explanation": "Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "h18",
+      "complaint": "Occasional mild palpitations after drinking coffee",
+      "expected": "HomeCare",
+      "tag": "judgement",
+      "rationale": "Caffeine-related palpitations.",
+      "predicted": "Urgent",
+      "proposed": "Urgent",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "palpitations#see-a-doctor-soon-if",
+        "palpitations#get-emergency-help-if",
+        "palpitations#self-care"
+      ],
+      "explanation": "Based on palpitations and your answers, a doctor should see you soon."
+    },
+    {
+      "id": "h19",
+      "complaint": "Mild cough for three days, no fever, playing normally",
+      "expected": "HomeCare",
+      "tag": "judgement",
+      "rationale": "Child with mild viral cough.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "cough#see-a-doctor-soon-if",
+        "fever#see-a-doctor-soon-if",
+        "cough#self-care"
+      ],
+      "explanation": "Based on fever, cough and your answers, this can likely be managed at home with self-care."
+    },
+    {
+      "id": "h20",
+      "complaint": "Small cut on my finger while cooking",
+      "expected": "HomeCare",
+      "tag": "judgement",
+      "rationale": "Minor cut, bleeding controlled.",
+      "predicted": "HomeCare",
+      "proposed": "HomeCare",
+      "escalated": false,
+      "decision_path": "rules",
+      "fallback_reason": "llm_disabled",
+      "provider": null,
+      "latency_ms": 1,
+      "wall_ms": 4,
+      "llm_calls": 0,
+      "tool_calls": 0,
+      "red_flags": [],
+      "citations": [
+        "bleeding#self-care",
+        "abdominal_pain#self-care",
+        "chest_pain#self-care"
+      ],
+      "explanation": "Based on the symptoms you described and your answers, this can likely be managed at home with self-care."
+    }
+  ]
+}
