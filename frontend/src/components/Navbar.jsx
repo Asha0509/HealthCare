@@ -1,58 +1,53 @@
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import { Activity, Clock, LogOut, Menu, X } from 'lucide-react'
 import { useState } from 'react'
+import { NavLink, Link, useLocation } from 'react-router-dom'
+import { Menu, X } from 'lucide-react'
+import { useEffect } from 'react'
+
+export function BrandMark() {
+    return (
+        <svg className="brand-mark" viewBox="0 0 22 28" aria-hidden="true">
+            <path d="M5 0h17v28H0V5z" fill="#1F5F55" />
+            <circle cx="11" cy="7" r="2.4" fill="#F6F8F7" />
+            <path d="M6.5 15.5h9v2.6h-9z M9.7 12.3h2.6v9h-2.6z" fill="#F6F8F7" />
+        </svg>
+    )
+}
+
+const LINKS = [
+    ['/triage', 'Check symptoms'],
+    ['/history', 'Your results'],
+    ['/evals', 'Evals'],
+    ['/ops', 'Ops'],
+]
 
 export default function Navbar() {
-    const { user, logout } = useAuth()
-    const navigate = useNavigate()
-    const [menuOpen, setMenuOpen] = useState(false)
-
-    const handleLogout = () => { logout(); navigate('/') }
+    const [open, setOpen] = useState(false)
+    const { pathname } = useLocation()
+    useEffect(() => setOpen(false), [pathname])
 
     return (
-        <nav style={{
-            position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-            background: 'rgba(5,13,26,0.85)',
-            backdropFilter: 'blur(20px)',
-            borderBottom: '1px solid rgba(255,255,255,0.06)',
-            padding: '0 24px',
-            height: '64px',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        }}>
-            {/* Logo */}
-            <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-                <div style={{
-                    width: 36, height: 36, borderRadius: 10,
-                    background: 'linear-gradient(135deg, #00d4aa, #3b82f6)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 0 16px rgba(0,212,170,0.4)',
-                }}>
-                    <Activity size={20} color="white" strokeWidth={2.5} />
+        <header>
+            <div className="sos">
+                <div className="wrap">
+                    <span>Someone in danger right now?</span>
+                    <a href="tel:112">Call 112</a>
+                    <span className="faint" style={{ color: '#c9d4d0' }}>This tool gives guidance, not a diagnosis.</span>
                 </div>
-                <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.02em' }}>
-                    Health<span className="gradient-text">AI</span>
-                </span>
-            </Link>
-
-            {/* Desktop Nav */}
-            <div className="hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Link to="/triage" className="btn btn-ghost" style={{ fontSize: '0.85rem' }}>
-                    Start Triage
-                </Link>
-                {user && (
-                    <Link to="/history" className="btn btn-ghost" style={{ fontSize: '0.85rem' }}>
-                        <Clock size={15} /> History
-                    </Link>
-                )}
-                {/* Auth buttons removed since auth is not set up */}
             </div>
-
-            {/* Mobile toggle */}
-            <button className="btn btn-ghost" style={{ display: 'none' }}
-                onClick={() => setMenuOpen(!menuOpen)}>
-                {menuOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
-        </nav>
+            <nav className="nav" aria-label="Main">
+                <div className="wrap">
+                    <Link to="/" className="brand"><BrandMark /> HealthAI</Link>
+                    <button className="menu-btn" aria-expanded={open} aria-controls="nav-links"
+                        onClick={() => setOpen(!open)} aria-label={open ? 'Close menu' : 'Open menu'}>
+                        {open ? <X size={20} /> : <Menu size={20} />}
+                    </button>
+                    <div id="nav-links" className={`nav-links ${open ? 'open' : ''}`}>
+                        {LINKS.map(([to, label]) => (
+                            <NavLink key={to} to={to} className={({ isActive }) => (isActive ? 'active' : '')}>{label}</NavLink>
+                        ))}
+                    </div>
+                </div>
+            </nav>
+        </header>
     )
 }

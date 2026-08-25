@@ -1,26 +1,35 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider } from './context/AuthContext'
+import { lazy, Suspense } from 'react'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import Navbar from './components/Navbar'
+import Footer from './components/Footer'
 import Landing from './pages/Landing'
-import Login from './pages/Login'
-import Register from './pages/Register'
 import Triage from './pages/Triage'
 import Result from './pages/Result'
 import History from './pages/History'
 
+// Chart-heavy pages load on demand so the symptom checker stays light.
+const Evals = lazy(() => import('./pages/Evals'))
+const Ops = lazy(() => import('./pages/Ops'))
+
 export default function App() {
     return (
-        <AuthProvider>
+        <div className="app">
+            <a className="skip-link" href="#main">Skip to content</a>
             <Navbar />
-            <Routes>
-                <Route path="/" element={<Landing />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/triage" element={<Triage />} />
-                <Route path="/result/:sessionId" element={<Result />} />
-                <Route path="/history" element={<History />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-        </AuthProvider>
+            <main id="main">
+                <Suspense fallback={<div className="wrap section faint">Loading…</div>}>
+                <Routes>
+                    <Route path="/" element={<Landing />} />
+                    <Route path="/triage" element={<Triage />} />
+                    <Route path="/result/:sessionId" element={<Result />} />
+                    <Route path="/history" element={<History />} />
+                    <Route path="/evals" element={<Evals />} />
+                    <Route path="/ops" element={<Ops />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+                </Suspense>
+            </main>
+            <Footer />
+        </div>
     )
 }

@@ -1,239 +1,161 @@
-import { Link } from 'react-router-dom'
-import { Activity, Shield, Brain, Zap, Heart, ChevronRight, AlertTriangle, Database, Layers, BarChart3 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import TriageTag from '../components/TriageTag'
+import IntakeFields from '../components/IntakeFields'
+import { systemAPI } from '../api/client'
 
-// Dataset & Model Statistics
-const DATASET_STATS = {
-    samples: '246,945',
-    symptoms: '377',
-    diseases: '721',
-    accuracy: '82.67%',
-    modelType: 'Random Forest',
-    trainingDate: 'Feb 2026'
-}
-
-const FEATURES = [
-    { icon: Brain, title: 'Medical NLP Engine', desc: 'Extracts symptoms, severity, and duration from natural language with clinical-grade accuracy.' },
-    { icon: Zap, title: 'Adaptive Questioning', desc: 'Dynamically follows up with the right questions based on your symptoms using Bayesian inference.' },
-    { icon: Shield, title: 'Safety Guardrails', desc: 'Hard-coded red-flag rules instantly escalate life-threatening presentations to Emergency.' },
-    { icon: Activity, title: 'Explainable AI', desc: 'Every triage result comes with plain-English reasoning backed by SHAP feature attribution.' },
-    { icon: Heart, title: 'Remedy & Nutrition', desc: 'Holistic home care recommendations tailored to your specific symptom profile.' },
-    { icon: AlertTriangle, title: 'Crisis Support', desc: 'Detects self-harm signals and connects you instantly with crisis hotline resources.' },
+const SAMPLES = [
+    { text: 'Mild sore throat since yesterday, no fever', age: 24, gender: 'female' },
+    { text: 'Fever of 39 C for four days with body aches', age: 31, gender: 'male' },
+    { text: 'Chest pain and sweating for the last 20 minutes', age: 58, gender: 'male' },
+    { text: 'Itchy rash on my hands after using a new soap', age: 27, gender: 'female' },
 ]
 
-const STEPS = [
-    { num: '01', title: 'Describe Symptoms', desc: 'Type what you feel in your own words — or use voice input.' },
-    { num: '02', title: 'Answer Follow-ups', desc: 'Our AI asks targeted questions to build a complete clinical picture.' },
-    { num: '03', title: 'Get Triage Result', desc: 'Receive an explainable Emergency, Urgent, or Home Care recommendation instantly.' },
-]
+const pctText = (v) => (v == null ? 'n/a' : `${Math.round(v * 100)}%`)
 
 export default function Landing() {
+    const navigate = useNavigate()
+    const [form, setForm] = useState({ complaint: '', age: '', gender: '' })
+    const [error, setError] = useState('')
+    const [evals, setEvals] = useState(null)
+    const [status, setStatus] = useState(null)
+
+    useEffect(() => {
+        systemAPI.evals().then((r) => setEvals(r.data.reports)).catch(() => setEvals([]))
+        systemAPI.status().then((r) => setStatus(r.data)).catch(() => setStatus(null))
+    }, [])
+
+    const submit = (e) => {
+        e.preventDefault()
+        if (form.complaint.trim().length < 3) return setError('Describe what you are feeling in a few words.')
+        if (form.age === '' || Number(form.age) < 0 || Number(form.age) > 120) return setError('Enter an age between 0 and 120.')
+        navigate('/triage', { state: { ...form, age: Number(form.age), autostart: true } })
+    }
+
+    const report = evals?.find((r) => r.pipeline === 'agent') || evals?.find((r) => r.pipeline === 'rules')
+    const m = report?.metrics
+
     return (
-        <div style={{ paddingTop: 64 }}>
-            {/* ── Hero ── */}
-            <section style={{ minHeight: '90vh', display: 'flex', alignItems: 'center', padding: '80px 0' }}>
-                <div className="container" style={{ textAlign: 'center' }}>
-                    {/* Status badge */}
-                    <div style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 10,
-                        background: 'rgba(0,212,170,0.1)', border: '1px solid rgba(0,212,170,0.2)',
-                        borderRadius: 999, padding: '6px 18px', marginBottom: 32
-                    }}>
-                        <span className="pulse-dot" />
-                        <span style={{ fontSize: '0.8rem', color: 'var(--accent-teal)', fontWeight: 600 }}>
-                            AI Clinical Triage System — Active
-                        </span>
-                    </div>
-
-                    <h1 style={{ maxWidth: 900, margin: '0 auto 24px' }}>
-                        <span className="gradient-text">AI-Powered</span> Healthcare Triage
-                        <br />for the Real World
-                    </h1>
-
-                    <p style={{ fontSize: '1.15rem', maxWidth: 640, margin: '0 auto 48px', lineHeight: 1.8 }}>
-                        Describe your symptoms. Our clinical AI asks intelligent follow-up questions,
-                        analyzes red flags in real-time, and delivers an explainable triage decision —
-                        <strong style={{ color: 'var(--text-primary)' }}> Emergency, Urgent, or Home Care</strong>.
-                    </p>
-
-                    <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
-                        <Link to="/triage" className="btn btn-primary" style={{ padding: '16px 36px', fontSize: '1rem' }}>
-                            Start Triage <ChevronRight size={18} />
-                        </Link>
-
-                    </div>
-
-                    {/* Floating stats */}
-                    <div style={{ display: 'flex', gap: 24, justifyContent: 'center', marginTop: 64, flexWrap: 'wrap' }}>
-                        {[
-                            { label: 'Training Samples', value: DATASET_STATS.samples },
-                            { label: 'Symptom Features', value: DATASET_STATS.symptoms },
-                            { label: 'Disease Classes', value: DATASET_STATS.diseases },
-                            { label: 'Top-5 Accuracy', value: DATASET_STATS.accuracy },
-                        ].map(s => (
-                            <div key={s.label} className="glass-card" style={{ padding: '20px 32px', textAlign: 'center', minWidth: 130 }}>
-                                <div style={{
-                                    fontSize: '1.8rem', fontWeight: 800, background: 'var(--gradient-brand)',
-                                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
-                                }}>{s.value}</div>
-                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>{s.label}</div>
+        <>
+            <section className="hero">
+                <div className="wrap hero-grid">
+                    <div>
+                        <h1>How urgent is it?</h1>
+                        <p className="lede">
+                            Describe what's wrong in your own words. You'll get one of three levels, the reasons
+                            behind it, and where to go.
+                        </p>
+                        <form className="intake" onSubmit={submit} noValidate>
+                            <IntakeFields form={form} setForm={(f) => { setForm(f); setError('') }} large />
+                            {error && <p className="error-text" role="alert" style={{ marginTop: 10 }}>{error}</p>}
+                            <div className="row" style={{ marginTop: 16 }}>
+                                <button className="btn btn-primary" type="submit">Check my symptoms</button>
+                                <span className="faint">Takes about a minute. No sign-up.</span>
                             </div>
-                        ))}
+                        </form>
+                        <div className="samples">
+                            <span className="faint">Or try an example:</span>
+                            <div className="samples-list">
+                                {SAMPLES.map((s) => (
+                                    <button key={s.text} type="button" className="sample"
+                                        onClick={() => { setForm({ complaint: s.text, age: String(s.age), gender: s.gender }); setError('') }}>
+                                        {s.text}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     </div>
+                    <aside aria-label="The three levels">
+                        <p className="levels-caption">Every check ends with one of three levels.</p>
+                        <div className="tag-stack">
+                            <TriageTag level="HomeCare" />
+                            <TriageTag level="Urgent" />
+                            <TriageTag level="Emergency" />
+                        </div>
+                    </aside>
                 </div>
             </section>
 
-            {/* ── How it works ── */}
-            <section style={{ padding: '100px 0', background: 'rgba(255,255,255,0.01)' }}>
-                <div className="container">
-                    <div style={{ textAlign: 'center', marginBottom: 64 }}>
-                        <h2>How It Works</h2>
-                        <p style={{ marginTop: 12 }}>Three steps. Seconds to result.</p>
+            <section className="section">
+                <div className="wrap">
+                    <div className="section-head">
+                        <h2>What happens to your words</h2>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
-                        {STEPS.map((s, i) => (
-                            <div key={i} className="glass-card" style={{ padding: 32, position: 'relative', overflow: 'hidden' }}>
-                                <div style={{
-                                    fontSize: '4rem', fontWeight: 900, position: 'absolute', top: 16, right: 20,
-                                    color: 'rgba(255,255,255,0.04)', fontVariantNumeric: 'tabular-nums'
-                                }}>{s.num}</div>
-                                <div style={{
-                                    fontSize: '1.5rem', fontWeight: 800, marginBottom: 12,
-                                    background: 'var(--gradient-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
-                                }}>
-                                    {s.num}
-                                </div>
-                                <h3 style={{ marginBottom: 10 }}>{s.title}</h3>
-                                <p style={{ fontSize: '0.9rem', lineHeight: 1.7 }}>{s.desc}</p>
+                    <ol className="pipeline">
+                        <li>
+                            <h3>Safety rules read it first</h3>
+                            <p>Fixed rules look for emergency signs such as a stroke, a heart attack or heavy bleeding. No AI is involved, so nothing can talk them out of it.</p>
+                        </li>
+                        <li>
+                            <h3>A few follow-up questions</h3>
+                            <p>Up to six quick questions picked for your symptoms: yes or no, a 1 to 10 scale, or how long.</p>
+                        </li>
+                        <li>
+                            <h3>An AI agent works the case</h3>
+                            <p>It looks up each symptom, searches a knowledge base of 23 short notes, and re-checks anything worrying before it decides.</p>
+                            <div className="tools">
+                                <code>lookup_symptom</code><code>search_knowledge</code><code>check_red_flags</code>
                             </div>
-                        ))}
-                    </div>
+                        </li>
+                        <li>
+                            <h3>A safety check, then your result</h3>
+                            <p>The final level is never lower than what the safety rules found. You see the reasons, the sources and care nearby.</p>
+                        </li>
+                    </ol>
                 </div>
             </section>
 
-            {/* ── Features ── */}
-            <section style={{ padding: '100px 0' }}>
-                <div className="container">
-                    <div style={{ textAlign: 'center', marginBottom: 64 }}>
-                        <h2>High-Level Engineering</h2>
-                        <p style={{ marginTop: 12 }}>Production-grade AI stack built for real-world healthcare.</p>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20 }}>
-                        {FEATURES.map((f, i) => (
-                            <div key={i} className="glass-card" style={{
-                                padding: 28,
-                                transition: 'transform 0.2s, box-shadow 0.2s',
-                                cursor: 'default'
-                            }}
-                                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 16px 48px rgba(0,0,0,0.4), 0 0 20px rgba(0,212,170,0.1)' }}
-                                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '' }}>
-                                <div style={{
-                                    width: 44, height: 44, borderRadius: 12,
-                                    background: 'var(--accent-teal-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16
-                                }}>
-                                    <f.icon size={22} color="var(--accent-teal)" />
-                                </div>
-                                <h3 style={{ marginBottom: 8 }}>{f.title}</h3>
-                                <p style={{ fontSize: '0.88rem', lineHeight: 1.7 }}>{f.desc}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* ── Disclaimer ── */}
-            <section style={{ padding: '60px 0' }}>
-                <div className="container">
-                    {/* Dataset & Model Info Banner */}
-                    <div className="glass-card" style={{ 
-                        padding: 32, 
-                        marginBottom: 32, 
-                        background: 'linear-gradient(135deg, rgba(0,212,170,0.05) 0%, rgba(59,130,246,0.05) 100%)',
-                        border: '1px solid rgba(0,212,170,0.15)'
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-                            <div style={{
-                                width: 40, height: 40, borderRadius: 10,
-                                background: 'var(--accent-teal-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center'
-                            }}>
-                                <Database size={20} color="var(--accent-teal)" />
-                            </div>
-                            <h3 style={{ margin: 0 }}>Powered by Medical Dataset</h3>
-                        </div>
-                        
-                        <div style={{ 
-                            display: 'grid', 
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
-                            gap: 20 
-                        }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                <Layers size={18} color="var(--accent-teal)" />
-                                <div>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Dataset</div>
-                                    <div style={{ fontWeight: 600 }}>Augmented Symptoms-Diseases</div>
-                                </div>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                <BarChart3 size={18} color="var(--accent-teal)" />
-                                <div>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Model</div>
-                                    <div style={{ fontWeight: 600 }}>{DATASET_STATS.modelType} Classifier</div>
-                                </div>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                <Brain size={18} color="var(--accent-teal)" />
-                                <div>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Training Data</div>
-                                    <div style={{ fontWeight: 600 }}>{DATASET_STATS.samples} samples</div>
-                                </div>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                <Activity size={18} color="var(--accent-teal)" />
-                                <div>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Prediction Accuracy</div>
-                                    <div style={{ fontWeight: 600 }}>{DATASET_STATS.accuracy} (Top-5)</div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div style={{ 
-                            marginTop: 20, 
-                            paddingTop: 16, 
-                            borderTop: '1px solid rgba(255,255,255,0.06)',
-                            fontSize: '0.8rem',
-                            color: 'var(--text-muted)'
-                        }}>
-                            <strong style={{ color: 'var(--text-secondary)' }}>ML Pipeline:</strong> Trained on {DATASET_STATS.symptoms} symptom features across {DATASET_STATS.diseases} disease classes using {DATASET_STATS.modelType} with stratified k-fold validation.
-                        </div>
-                    </div>
-                    
-                    <div style={{
-                        background: 'rgba(245,158,11,0.05)', border: '1px solid rgba(245,158,11,0.2)',
-                        borderRadius: 'var(--radius-lg)', padding: '24px 32px', display: 'flex', gap: 16, alignItems: 'flex-start'
-                    }}>
-                        <AlertTriangle size={22} color="var(--urgent)" style={{ flexShrink: 0, marginTop: 2 }} />
-                        <div>
-                            <strong style={{ color: 'var(--urgent)', fontSize: '0.9rem' }}>Medical Disclaimer</strong>
-                            <p style={{ marginTop: 4, fontSize: '0.85rem', lineHeight: 1.7 }}>
-                                This system is a clinical decision <em>support</em> tool and is NOT a substitute for professional medical advice,
-                                diagnosis, or treatment. Always seek advice from a qualified physician for any medical condition.
-                                In an emergency, call <strong style={{ color: 'var(--text-primary)' }}>112</strong> immediately.
+            <section className="section">
+                <div className="wrap">
+                    <div className="section-head">
+                        <div className="stack" style={{ '--s': '8px' }}>
+                            <h2>How well it works</h2>
+                            <p className="muted">
+                                Every change is tested on 60 written cases, 20 for each level. The number that matters
+                                most is missed emergencies: someone who needed help now being told to stay home.
                             </p>
                         </div>
+                        <Link to="/evals" className="btn btn-quiet">See every case</Link>
                     </div>
+                    {m ? (
+                        <>
+                            <div className="figures">
+                                <div className={`figure ${m.critical_misses === 0 ? 'good' : 'bad'}`}>
+                                    <div className="figure-value">{m.critical_misses}</div>
+                                    <div className="figure-label">emergencies sent home</div>
+                                </div>
+                                <div className="figure">
+                                    <div className="figure-value">{pctText(m.emergency_recall)}</div>
+                                    <div className="figure-label">of emergencies flagged as emergencies</div>
+                                </div>
+                                <div className="figure">
+                                    <div className="figure-value">{pctText(m.accuracy)}</div>
+                                    <div className="figure-label">of all cases given the expected level</div>
+                                </div>
+                                <div className="figure">
+                                    <div className="figure-value">{pctText(m.over_triage_rate)}</div>
+                                    <div className="figure-label">sent to a higher level than needed</div>
+                                </div>
+                            </div>
+                            <p className="faint" style={{ marginTop: 10 }}>
+                                {report.pipeline === 'agent' ? 'AI agent with safety rules' : 'Rule-based pipeline (AI off)'},
+                                run {new Date(report.run_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}.
+                                Expected levels were written by the project author from public guidance and are not clinically validated.
+                            </p>
+                        </>
+                    ) : (
+                        <div className="empty">{evals ? 'No eval results published yet.' : 'Loading eval results…'}</div>
+                    )}
+                    {status && (
+                        <p className="notice" style={{ marginTop: 24 }}>
+                            {status.agent_enabled
+                                ? <>Running now: the AI agent uses {Object.entries(status.llm_models).map(([p, mdl], i) => `${i ? 'backup ' : ''}${mdl} via ${p === 'groq' ? 'Groq' : 'NVIDIA NIM'}`).join(', ')}.</>
+                                : <>Running now: no AI provider is configured on this server, so results come from the rule-based assessment and the safety rules.</>}
+                            {' '}Knowledge search: {status.knowledge_base.notes} notes, {status.knowledge_base.mode === 'embeddings' ? 'vector search with embeddings' : 'keyword search'}.
+                        </p>
+                    )}
                 </div>
             </section>
-
-            {/* ── Footer ── */}
-            <footer style={{ borderTop: '1px solid var(--border-glass)', padding: '32px 0' }}>
-                <div className="container flex-between" style={{ flexWrap: 'wrap', gap: 12 }}>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                        © 2025 HealthAI — AI Clinical Triage System
-                    </span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                        Built with FastAPI · XGBoost · SciSpacy · React · Trained on 246K+ Medical Records
-                    </span>
-                </div>
-            </footer>
-        </div>
+        </>
     )
 }

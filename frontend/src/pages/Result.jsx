@@ -1,451 +1,169 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { triageAPI, hospitalAPI } from '../api/client'
-import {
-    BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell
-} from 'recharts'
-import {
-    AlertTriangle, CheckCircle, Clock, Phone, MapPin,
-    Heart, Salad, ArrowLeft, ExternalLink, Info, Database, Pill
-} from 'lucide-react'
+import { Link, useLocation, useParams } from 'react-router-dom'
+import { motion, useReducedMotion } from 'framer-motion'
+import { Check, Printer, RotateCcw } from 'lucide-react'
+import TriageTag from '../components/TriageTag'
+import AgentTrace from '../components/AgentTrace'
+import Citations from '../components/Citations'
+import Facilities from '../components/Facilities'
+import { errorMessage, triageAPI } from '../api/client'
+import { getResult, saveResult } from '../lib/history'
+import { FALLBACK_REASONS, LEVELS, PATHS, prettySymptom, timeAgo } from '../lib/labels'
 
-// Dataset Model Info
-const MODEL_INFO = {
-    dataset: 'Medical Symptoms-Diseases Dataset',
-    samples: '246,945',
-    features: '377 symptoms',
-    classes: '721 diseases',
-    accuracy: '82.67%'
-}
-
-const URGENCY_CONFIG = {
-    Emergency: {
-        icon: '🚨', label: 'Emergency', color: '#ef4444',
-        bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.25)',
-        glow: '0 0 40px rgba(239,68,68,0.25)',
-        badge: 'badge-emergency',
-        message: 'This presentation requires immediate emergency care.',
-    },
-    Urgent: {
-        icon: '⚡', label: 'Urgent', color: '#f59e0b',
-        bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.25)',
-        glow: '0 0 40px rgba(245,158,11,0.15)',
-        badge: 'badge-urgent',
-        message: 'Please seek medical attention within the next few hours.',
-    },
-    HomeCare: {
-        icon: '🏠', label: 'Home Care', color: '#10b981',
-        bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.25)',
-        glow: '0 0 40px rgba(16,185,129,0.15)',
-        badge: 'badge-homecare',
-        message: 'You can manage this at home with appropriate care.',
-    },
-}
-
-const SHAP_COLORS = ['#00d4aa', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444']
-
-function ConfidenceRing({ value, color }) {
-    const r = 54, circ = 2 * Math.PI * r
-    const offset = circ - (value / 100) * circ
+function Ticks({ items }) {
     return (
-        <svg width={130} height={130} style={{ transform: 'rotate(-90deg)' }}>
-            <circle cx={65} cy={65} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={10} />
-            <circle cx={65} cy={65} r={r} fill="none" stroke={color} strokeWidth={10}
-                strokeDasharray={circ} strokeDashoffset={offset}
-                strokeLinecap="round"
-                style={{ transition: 'stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1)', filter: `drop-shadow(0 0 6px ${color})` }} />
-        </svg>
+        <ul className="ticks">
+            {items.map((t, i) => <li key={i}><Check size={16} aria-hidden="true" /><span>{t}</span></li>)}
+        </ul>
     )
 }
 
 export default function Result() {
     const { sessionId } = useParams()
-    const [result, setResult] = useState(null)
-    const [hospitals, setHospitals] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
+    const location = useLocation()
+    const reduce = useReducedMotion()
+    const [result, setResult] = useState(location.state?.result || null)
+    const [error, setError] = useState('')
+    const [fromCache, setFromCache] = useState(false)
 
     useEffect(() => {
-        const load = async () => {
-            try {
-                const { data } = await triageAPI.result(sessionId)
-                setResult(data)
-                
-                // Get user location for hospital recommendations
-                let lat = null, lon = null
-                try {
-                    const position = await new Promise((resolve, reject) => {
-                        navigator.geolocation.getCurrentPosition(resolve, reject, {
-                            enableHighAccuracy: false,
-                            timeout: 5000,
-                            maximumAge: 300000 // 5 minutes cache
-                        })
-                    })
-                    lat = position.coords.latitude
-                    lon = position.coords.longitude
-                } catch (geoError) {
-                    console.log('Location not available, using default')
-                }
-                
-                // Fetch hospitals with location
-                const topSymptom = data.diseases_considered?.[0]?.split('_')[0]
-                const hRes = await hospitalAPI.nearby(data.triage_label, topSymptom, lat, lon)
-                setHospitals(hRes.data.hospitals || [])
-            } catch (e) {
-                setError(e.response?.data?.detail || 'Failed to load result.')
-            } finally { setLoading(false) }
-        }
-        load()
-    }, [sessionId])
+        if (result) return
+        triageAPI.result(sessionId)
+            .then(({ data }) => { setResult(data); saveResult(data) })
+            .catch((err) => {
+                const saved = getResult(sessionId)
+                if (saved) { setResult(saved); setFromCache(true) } else setError(errorMessage(err))
+            })
+    }, [sessionId, result])
 
-    if (loading) return (
-        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 20, paddingTop: 64 }}>
-            <div className="spinner" style={{ width: 48, height: 48, borderWidth: 4 }} />
-            <p>Generating your triage result...</p>
-        </div>
-    )
-
-    if (error) return (
-        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, paddingTop: 80 }}>
-            <div className="glass-card" style={{ padding: 40, maxWidth: 500, textAlign: 'center' }}>
-                <AlertTriangle size={40} color="var(--urgent)" style={{ marginBottom: 16 }} />
-                <h3>Couldn't load result</h3>
-                <p style={{ marginTop: 8, fontSize: '0.9rem' }}>{error}</p>
-                <Link to="/triage" className="btn btn-primary" style={{ marginTop: 24 }}>Start New Triage</Link>
+    if (error) {
+        return (
+            <div className="wrap result">
+                <div className="empty">
+                    <p>{error}</p>
+                    <p style={{ marginTop: 12 }}><Link to="/triage" className="btn btn-primary">Start a new check</Link></p>
+                </div>
             </div>
-        </div>
-    )
+        )
+    }
+    if (!result) return <div className="wrap result"><p className="faint">Loading your result…</p></div>
 
-    if (!result) return null
-
-    const cfg = URGENCY_CONFIG[result.triage_label] || URGENCY_CONFIG.HomeCare
-    const conf = Math.round((result.confidence || 0.7) * 100)
-
-    // SHAP chart data
-    const shapData = (result.shap_features || []).map((f, i) => ({
-        name: f.human_label || f.feature,
-        value: Math.abs(f.contribution) * 100,
-        direction: f.direction,
-        color: f.direction === 'increases_risk' ? SHAP_COLORS[i % SHAP_COLORS.length] : '#475569',
-    })).slice(0, 5)
-
-    // Probability chart
-    const probData = Object.entries(result.probabilities || {}).map(([k, v]) => ({
-        name: k, value: Math.round(v * 100),
-        color: URGENCY_CONFIG[k]?.color || '#475569'
-    }))
+    const level = LEVELS[result.triage_label]
+    const flags = result.red_flags || []
+    const showProbs = result.probabilities && result.decision_path === 'agent'
 
     return (
-        <div style={{ minHeight: '100vh', paddingTop: 80, paddingBottom: 80 }}>
-            <div className="container">
-                <Link to="/triage" className="btn btn-ghost" style={{ marginBottom: 24 }}>
-                    <ArrowLeft size={16} /> New Triage
-                </Link>
-
-                {/* ── Crisis Banner ── */}
-                {result.crisis_response && (
-                    <div style={{
-                        background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
-                        borderRadius: 'var(--radius-lg)', padding: '20px 24px', marginBottom: 24,
-                        display: 'flex', gap: 16, alignItems: 'flex-start'
-                    }}>
-                        <Heart size={22} color="#ef4444" style={{ flexShrink: 0, marginTop: 2 }} />
-                        <div>
-                            <strong style={{ color: '#ef4444' }}>You are not alone. Help is available right now.</strong>
-                            <p style={{ marginTop: 6, fontSize: '0.88rem', lineHeight: 1.7 }}>
-                                iCall India: <strong style={{ color: 'var(--text-primary)' }}>9152987821</strong> &nbsp;|&nbsp;
-                                Vandrevala Foundation: <strong style={{ color: 'var(--text-primary)' }}>1860-2662-345</strong> (24/7)
-                            </p>
-                        </div>
-                    </div>
-                )}
-
-                {/* ── Main Result Card ── */}
-                <div className="glass-card" style={{
-                    padding: '40px', marginBottom: 24,
-                    background: cfg.bg, borderColor: cfg.border, boxShadow: cfg.glow
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 24 }}>
-                        <div style={{ flex: 1 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                                <span style={{ fontSize: '2.5rem' }}>{cfg.icon}</span>
-                                <div>
-                                    <span className={`badge ${cfg.badge}`} style={{ fontSize: '0.85rem', marginBottom: 4 }}>
-                                        {cfg.label}
-                                    </span>
-                                    <p style={{ fontSize: '0.88rem', marginTop: 4, color: cfg.color }}>{cfg.message}</p>
-                                </div>
-                            </div>
-
-                            <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 'var(--radius-md)', padding: '16px 20px', marginTop: 16 }}>
-                                <p style={{ fontSize: '0.9rem', lineHeight: 1.8, color: 'var(--text-primary)' }}>
-                                    {result.explanation_text}
-                                </p>
-                            </div>
-
-                            <div style={{
-                                marginTop: 20, padding: '14px 18px',
-                                background: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-md)',
-                                border: '1px solid var(--border-glass)', fontSize: '0.9rem', lineHeight: 1.7
-                            }}>
-                                <strong style={{ color: cfg.color }}>Recommended Action: </strong>
-                                {result.recommended_action}
-                            </div>
-
-                            {result.red_flag_triggered && (
-                                <div style={{
-                                    marginTop: 16, display: 'flex', gap: 10, alignItems: 'center',
-                                    background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
-                                    borderRadius: 'var(--radius-md)', padding: '10px 16px'
-                                }}>
-                                    <AlertTriangle size={16} color="#ef4444" />
-                                    <span style={{ fontSize: '0.82rem', color: '#ef4444' }}>
-                                        Red-flag rule triggered: {result.red_flag_reason}
-                                    </span>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Confidence ring */}
-                        <div style={{ textAlign: 'center', flexShrink: 0 }}>
-                            <div style={{ position: 'relative', display: 'inline-block' }}>
-                                <ConfidenceRing value={conf} color={cfg.color} />
-                                <div style={{
-                                    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
-                                    textAlign: 'center'
-                                }}>
-                                    <div style={{ fontSize: '1.6rem', fontWeight: 800 }}>{conf}%</div>
-                                    <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>confidence</div>
-                                </div>
-                            </div>
-                            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>AI Confidence</p>
-                            
-                            {/* Data Source Badge */}
-                            <div style={{
-                                marginTop: 12,
-                                padding: '8px 12px',
-                                background: 'rgba(0,212,170,0.08)',
-                                border: '1px solid rgba(0,212,170,0.2)',
-                                borderRadius: 8,
-                                fontSize: '0.7rem'
-                            }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
-                                    <Database size={12} color="var(--accent-teal)" />
-                                    <span style={{ color: 'var(--accent-teal)', fontWeight: 600 }}>ML Model</span>
-                                </div>
-                                <div style={{ color: 'var(--text-muted)', marginTop: 4 }}>
-                                    {MODEL_INFO.samples} samples
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 20 }}>
-                    {/* ── SHAP Explainability ── */}
-                    {shapData.length > 0 && (
-                        <div className="glass-card" style={{ padding: 28 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-                                <Info size={18} color="var(--accent-teal)" />
-                                <h3 style={{ fontSize: '1rem' }}>Why this result?</h3>
-                            </div>
-                            <p style={{ fontSize: '0.82rem', marginBottom: 20, color: 'var(--text-muted)' }}>
-                                Top factors that influenced your triage decision (SHAP attribution)
-                            </p>
-                            <ResponsiveContainer width="100%" height={200}>
-                                <BarChart data={shapData} layout="vertical" margin={{ left: 0, right: 20 }}>
-                                    <XAxis type="number" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} />
-                                    <YAxis type="category" dataKey="name" width={130}
-                                        tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} />
-                                    <Tooltip
-                                        contentStyle={{
-                                            background: 'rgba(10,22,40,0.95)', border: '1px solid rgba(255,255,255,0.08)',
-                                            borderRadius: 8, fontSize: '0.8rem'
-                                        }}
-                                        formatter={(v) => [`${v.toFixed(1)}%`, 'Influence']} />
-                                    <Bar dataKey="value" radius={[0, 4, 4, 0]}>
-                                        {shapData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
-                    )}
-
-                    {/* ── Probability Distribution ── */}
-                    {probData.length > 0 && (
-                        <div className="glass-card" style={{ padding: 28 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-                                <h3 style={{ fontSize: '1rem' }}>Probability Distribution</h3>
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                                {probData.map(({ name, value, color }) => (
-                                    <div key={name}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                                            <span style={{ fontSize: '0.85rem', color }}>{name}</span>
-                                            <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>{value}%</span>
-                                        </div>
-                                        <div className="progress-bar">
-                                            <div className="progress-fill" style={{ width: `${value}%`, background: color }} />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Diseases considered */}
-                            {result.diseases_considered?.length > 0 && (
-                                <div style={{ marginTop: 24 }}>
-                                    <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 10 }}>Conditions considered:</p>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                                        {result.diseases_considered.map(d => (
-                                            <span key={d} className="badge badge-info" style={{ fontSize: '0.7rem' }}>
-                                                {d.replace(/_/g, ' ')}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* ── Remedies ── */}
-                    {result.remedies?.length > 0 && (
-                        <div className="glass-card" style={{ padding: 28 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-                                <Heart size={18} color="var(--homecare)" />
-                                <h3 style={{ fontSize: '1rem' }}>Home Remedy Tips</h3>
-                            </div>
-                            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                {result.remedies.map((r, i) => (
-                                    <li key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: '0.88rem' }}>
-                                        <CheckCircle size={15} color="var(--homecare)" style={{ flexShrink: 0, marginTop: 2 }} />
-                                        <span style={{ color: 'var(--text-secondary)' }}>{r}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-
-                    {/* ── Nutrition ── */}
-                    {result.nutrition_tips?.length > 0 && (
-                        <div className="glass-card" style={{ padding: 28 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-                                <Salad size={18} color="var(--accent-teal)" />
-                                <h3 style={{ fontSize: '1rem' }}>Nutrition Recommendations</h3>
-                            </div>
-                            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                {result.nutrition_tips.map((n, i) => (
-                                    <li key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: '0.88rem' }}>
-                                        <span style={{ color: 'var(--accent-teal)', flexShrink: 0 }}>🥗</span>
-                                        <span style={{ color: 'var(--text-secondary)' }}>{n}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-
-                    {/* ── Medications ── */}
-                    {result.medications?.length > 0 && (
-                        <div className="glass-card" style={{ padding: 28 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-                                <Pill size={18} color="var(--urgent)" />
-                                <h3 style={{ fontSize: '1rem' }}>Medication Guidance</h3>
-                            </div>
-                            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                {result.medications.map((m, i) => (
-                                    <li key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: '0.88rem' }}>
-                                        <span style={{ color: 'var(--urgent)', flexShrink: 0 }}>💊</span>
-                                        <span style={{ color: 'var(--text-secondary)' }}>{m}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-
-                    {/* ── Hospital Recommendations ── */}
-                    {hospitals.length > 0 && (
-                        <div className="glass-card" style={{ padding: 28, gridColumn: '1 / -1' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-                                <MapPin size={18} color={cfg.color} />
-                                <h3 style={{ fontSize: '1rem' }}>Recommended Healthcare Facilities</h3>
-                            </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
-                                {hospitals.map((h, i) => (
-                                    <div key={i} style={{
-                                        background: 'rgba(255,255,255,0.03)',
-                                        border: '1px solid var(--border-glass)', borderRadius: 'var(--radius-md)', padding: 20
-                                    }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                                            <strong style={{ fontSize: '0.9rem', lineHeight: 1.4 }}>{h.name}</strong>
-                                            <span className={`badge ${h.type === 'emergency' ? 'badge-emergency' : h.type === 'specialist' ? 'badge-urgent' : 'badge-homecare'}`}
-                                                style={{ fontSize: '0.65rem', flexShrink: 0, marginLeft: 8 }}>
-                                                {h.type}
-                                            </span>
-                                        </div>
-                                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: 12 }}>{h.address}</p>
-                                        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                                            {h.phone && (
-                                                <a href={`tel:${h.phone}`} className="btn btn-ghost"
-                                                    style={{ padding: '4px 10px', fontSize: '0.78rem' }}>
-                                                    <Phone size={12} /> {h.phone}
-                                                </a>
-                                            )}
-                                            {h.maps_url && (
-                                                <a href={h.maps_url} target="_blank" rel="noopener noreferrer"
-                                                    className="btn btn-secondary" style={{ padding: '4px 10px', fontSize: '0.78rem' }}>
-                                                    <ExternalLink size={12} /> Directions
-                                                </a>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Data Source Info */}
-                <div className="glass-card" style={{
-                    marginTop: 24,
-                    padding: '20px 24px',
-                    background: 'linear-gradient(135deg, rgba(0,212,170,0.04) 0%, rgba(59,130,246,0.04) 100%)',
-                    border: '1px solid rgba(0,212,170,0.12)'
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <Database size={18} color="var(--accent-teal)" />
-                            <div>
-                                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                                    Prediction Source: {MODEL_INFO.dataset}
-                                </div>
-                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>
-                                    Trained on {MODEL_INFO.samples} medical records • {MODEL_INFO.features} • {MODEL_INFO.classes}
-                                </div>
-                            </div>
-                        </div>
-                        <div style={{
-                            padding: '6px 12px',
-                            background: 'rgba(0,212,170,0.1)',
-                            borderRadius: 6,
-                            fontSize: '0.75rem',
-                            color: 'var(--accent-teal)',
-                            fontWeight: 600
-                        }}>
-                            Top-5 Accuracy: {MODEL_INFO.accuracy}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Disclaimer */}
-                <div style={{
-                    marginTop: 32, padding: '16px 20px',
-                    background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.15)',
-                    borderRadius: 'var(--radius-md)', display: 'flex', gap: 12, alignItems: 'flex-start'
-                }}>
-                    <AlertTriangle size={16} color="var(--urgent)" style={{ flexShrink: 0, marginTop: 2 }} />
-                    <p style={{ fontSize: '0.8rem', lineHeight: 1.7, color: 'var(--text-muted)' }}>
-                        This result is generated by an AI clinical decision support tool and is <strong>not a substitute</strong> for professional medical advice.
-                        Always consult a qualified physician for diagnosis and treatment.
+        <div className="wrap result">
+            <div className="result-top">
+                <div className="stack" style={{ '--s': '6px' }}>
+                    <p className="faint">
+                        {result.chief_complaint ? <>“{result.chief_complaint}”</> : 'Your result'}
+                        {result.created_at ? `, ${timeAgo(result.created_at)}` : ''}
                     </p>
+                    {result.symptoms?.length > 0 && (
+                        <div className="chips">{result.symptoms.map((s) => <span key={s} className="pill">{prettySymptom(s)}</span>)}</div>
+                    )}
+                </div>
+                <div className="row no-print">
+                    <button className="btn btn-quiet btn-sm" type="button" onClick={() => window.print()}><Printer size={15} aria-hidden="true" /> Print or save</button>
+                    <Link className="btn btn-quiet btn-sm" to="/triage"><RotateCcw size={15} aria-hidden="true" /> New check</Link>
+                </div>
+            </div>
+
+            <motion.div style={{ marginTop: 18 }}
+                initial={reduce ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+                <TriageTag level={result.triage_label} hero>
+                    <p className="tag-action">{result.recommended_action || level.meaning}</p>
+                </TriageTag>
+            </motion.div>
+
+            {result.crisis_response && (
+                <div className="crisis" style={{ marginTop: 20 }} role="alert">
+                    <p style={{ fontWeight: 700, marginBottom: 8 }}>You don't have to go through this alone. Talk to someone now:</p>
+                    <div className="row" style={{ gap: 20 }}>
+                        <a href="tel:9152987821">iCall 9152987821</a>
+                        <a href="tel:18602662345">Vandrevala 1860-2662-345 (24/7)</a>
+                        <a href="tel:112">Emergency 112</a>
+                    </div>
+                </div>
+            )}
+
+            {fromCache && <p className="notice warn" style={{ marginTop: 16 }}>Showing the copy saved in this browser. The server no longer has this result.</p>}
+
+            <div className="result-cols">
+                <div>
+                    <section className="block">
+                        <h2>Why this level</h2>
+                        <p className="measure">{result.explanation_text}</p>
+                        {result.escalated && (
+                            <p className="notice warn" style={{ marginTop: 12 }}>
+                                The {result.decision_path === 'agent' ? 'AI agent' : 'rule-based assessment'} suggested <strong>{LEVELS[result.proposed_label]?.name}</strong>. A safety rule raised it
+                                to <strong>{level.name}</strong>, because safety rules can only make a result more cautious.
+                            </p>
+                        )}
+                        {flags.length > 0 && (
+                            <ul className="flag-list" style={{ marginTop: 14 }}>
+                                {flags.map((f) => <li key={f.rule_id} className={f.level}><strong>{f.level}: </strong>{f.reason}</li>)}
+                            </ul>
+                        )}
+                        {result.key_factors?.length > 0 && (
+                            <div style={{ marginTop: 16 }}><Ticks items={result.key_factors} /></div>
+                        )}
+                    </section>
+
+                    {result.self_care?.length > 0 && result.triage_label !== 'Emergency' && (
+                        <section className="block">
+                            <h2>{result.triage_label === 'HomeCare' ? 'What you can do at home' : 'While you wait to be seen'}</h2>
+                            <Ticks items={result.self_care} />
+                        </section>
+                    )}
+
+                    {result.conditions_to_consider?.length > 0 && (
+                        <section className="block">
+                            <h2>Things a doctor may consider</h2>
+                            <p className="faint" style={{ marginBottom: 10 }}>Not a diagnosis. Only a doctor who examines you can say what it is.</p>
+                            <div className="chips">{result.conditions_to_consider.map((c) => <span key={c} className="pill">{c}</span>)}</div>
+                        </section>
+                    )}
+
+                    <section className="block no-print">
+                        <h2>Care near you</h2>
+                        <Facilities urgency={result.triage_label} />
+                    </section>
+                </div>
+
+                <div>
+                    <section className="block">
+                        <h2>Sources</h2>
+                        <Citations items={result.citations} />
+                    </section>
+
+                    <section className="block">
+                        <h2>How this was decided</h2>
+                        <p><span className="pill">{PATHS[result.decision_path] || result.decision_path}</span></p>
+                        {result.fallback_reason && <p className="faint" style={{ marginTop: 8 }}>{FALLBACK_REASONS[result.fallback_reason]}</p>}
+                        <p className="faint" style={{ marginTop: 8 }}>
+                            {result.provider ? `${result.model} via ${result.provider}. ` : ''}
+                            {result.llm_calls ? `${result.llm_calls} model turns, ${result.tool_calls} tool calls, ` : ''}
+                            {result.latency_ms != null ? (result.latency_ms < 100 ? 'Under 0.1 s.' : `${(result.latency_ms / 1000).toFixed(1)} s.`) : ''}
+                        </p>
+                        {showProbs && (
+                            <div className="probs" style={{ marginTop: 14 }}>
+                                <p className="faint">The model's own estimate for each level (before the safety check):</p>
+                                {['HomeCare', 'Urgent', 'Emergency'].map((k) => (
+                                    <div className="prob" key={k}>
+                                        <span>{LEVELS[k].name}</span>
+                                        <span className="prob-bar"><span style={{ width: `${(result.probabilities[k] || 0) * 100}%`, '--c': `var(--${LEVELS[k].key === 'home' ? 'home' : LEVELS[k].key})` }} /></span>
+                                        <span className="num">{Math.round((result.probabilities[k] || 0) * 100)}%</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        <details style={{ marginTop: 14 }}>
+                            <summary className="btn btn-text">Show every step</summary>
+                            <AgentTrace steps={result.agent_steps} />
+                        </details>
+                    </section>
                 </div>
             </div>
         </div>

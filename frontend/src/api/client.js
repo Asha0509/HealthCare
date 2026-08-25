@@ -1,47 +1,37 @@
 import axios from 'axios'
 
-const API = axios.create({
-    // Keep endpoint paths as /api/* and let dev proxy / deployment rewrites route them.
-    baseURL: import.meta.env.VITE_API_URL || '',
-    timeout: 30000,
-})
+// Empty in dev (Vite proxies /api); set VITE_API_URL for a deployed backend.
+const API = axios.create({ baseURL: import.meta.env.VITE_API_URL || '', timeout: 60000 })
 
-// Attach JWT token
-API.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token')
-    if (token) config.headers.Authorization = `Bearer ${token}`
-    return config
-})
-
-// Handle 401
-API.interceptors.response.use(
-    (r) => r,
-    (err) => {
-        if (err.response?.status === 401) {
-            localStorage.removeItem('token')
-            localStorage.removeItem('user')
-            window.location.href = '/login'
-        }
-        return Promise.reject(err)
-    }
-)
-
-export const authAPI = {
-    register: (data) => API.post('/api/auth/register', data),
-    login: (data) => API.post('/api/auth/login', data),
-    me: () => API.get('/api/auth/me'),
+/** Turn any request failure into a sentence a person can act on. */
+export function errorMessage(err) {
+    const detail = err?.response?.data?.detail
+    if (typeof detail === 'string') return detail
+    if (Array.isArray(detail)) return detail.map((d) => d.msg).join('; ')
+    if (err?.code === 'ECONNABORTED') return 'The server took too long to answer. Please try again.'
+    if (!err?.response) return "Can't reach the server. It may be waking up; try again in a few seconds."
+    return 'Something went wrong. Please try again.'
 }
 
 export const triageAPI = {
     start: (data) => API.post('/api/triage/start', data),
     answer: (data) => API.post('/api/triage/answer', data),
     result: (sessionId) => API.get(`/api/triage/result/${sessionId}`),
-    history: () => API.get('/api/triage/history'),
+    assess: (data) => API.post('/api/triage/assess', data),
 }
 
-export const hospitalAPI = {
-    nearby: (urgency, symptom, lat, lon) =>
-        API.get('/api/hospitals/nearby', { params: { urgency, symptom, lat, lon } }),
+export const facilitiesAPI = {
+    nearby: (params) => API.get('/api/facilities/nearby', { params }),
+}
+
+export const systemAPI = {
+    status: () => API.get('/api/system/status'),
+    metrics: (hours = 168) => API.get('/api/metrics/summary', { params: { hours } }),
+    calls: (limit = 40) => API.get('/api/metrics/calls', { params: { limit } }),
+    runs: (limit = 40) => API.get('/api/metrics/runs', { params: { limit } }),
+    timeseries: (hours = 24, bucket = 60) => API.get('/api/metrics/timeseries', { params: { hours, bucket_minutes: bucket } }),
+    evals: () => API.get('/api/evals'),
+    evalReport: (name) => API.get(`/api/evals/${name}`),
 }
 
 export default API
