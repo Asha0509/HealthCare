@@ -1,273 +1,110 @@
-# 🏥 HealthAI - AI-Powered Healthcare Triage System
+# HealthAI triage
 
-> **⚠️ Medical Disclaimer**: This is a demo/educational project and is NOT a substitute for professional medical advice. In an emergency, call **112** immediately.
+Describe your symptoms in your own words and get one of three levels (**home care**, **see a doctor today**, or **emergency**), the reasons behind it, cited sources, and real places nearby to get care.
 
-An AI-powered healthcare triage system that uses Google's Gemini API for intelligent symptom analysis. Describe your symptoms in natural language; the system extracts symptoms, asks smart follow-up questions, and provides an **Emergency / Urgent / Home Care** triage recommendation with explanations and nearby hospital suggestions.
+**Live:** https://healthai-triage.onrender.com · [Evals](https://healthai-triage.onrender.com/evals) · [Ops dashboard](https://healthai-triage.onrender.com/ops) · API docs at `https://healthai-triage-api.onrender.com/api/docs`
 
----
+> Portfolio project, not a medical device. It can be wrong. In an emergency, call 112.
 
-## 📊 Dataset & ML Model
+## How a case is decided
 
-### Medical Symptoms-Diseases Dataset
-This project includes a comprehensive medical dataset for disease prediction:
-
-| Metric | Value |
-|---|---|
-| **Total Samples** | 246,945 |
-| **Symptom Features** | 377 |
-| **Disease Classes** | 721 |
-| **Dataset File** | `Final_Augmented_dataset_Diseases_and_Symptoms.csv` |
-
-#### Download Dataset from Kaggle
-
-The dataset is too large for GitHub. Download it using KaggleHub:
-
-```bash
-pip install kagglehub
+```mermaid
+flowchart TD
+    A[Complaint + age + sex] --> B[Symptom extraction<br/>LLM, keyword fallback]
+    B --> C{Deterministic red-flag rules}
+    C -- emergency sign --> R
+    C -- otherwise --> D[Up to 6 typed follow-up questions<br/>yes/no, 1-10, duration, choice]
+    D --> E[Tool-calling triage agent]
+    E -->|lookup_symptom| K[(Symptom graph)]
+    E -->|search_knowledge| V[(Knowledge base<br/>embeddings + keyword)]
+    E -->|check_red_flags| C
+    E -->|submit_assessment| M[Safety merge:<br/>final = max of agent and red flags]
+    E -. no provider / failure .-> F[Rule-based assessment] --> M
+    M --> R[Result: level, reasons, sources,<br/>agent steps, nearby care]
 ```
 
-```python
-import kagglehub
+- **Red-flag rules** (`backend/services/red_flags.py`): plain regex rules for stroke (FAST), heart attack, breathing difficulty, anaphylaxis, meningitis, heavy bleeding, overdose, pregnancy bleeding, self-harm and more, plus answer-based rules ("chest pain → sweating: yes"). They ignore negated symptoms ("no chest pain") and **can only raise a level, never lower it**, so a model mistake can't talk the system out of an emergency. A self-harm crisis skips the AI entirely and shows helplines.
+- **Agent** (`backend/services/agent.py`): an OpenAI-compatible tool-calling loop (Groq Llama 3.3 70B, failing over to NVIDIA NIM Llama 3.1 70B). It must finish with a structured `submit_assessment` call; citations it didn't actually retrieve are dropped. If no provider is configured or the agent fails, a rule-based assessment is used and the reason is shown.
+- **Knowledge base / RAG** (`data/knowledge/`, `backend/services/rag.py`): 23 short notes (one per symptom plus emergency topics), each linked to a MedlinePlus page. Each section is embedded with [model2vec](https://github.com/MinishLab/model2vec) `potion-base-8M` (numpy only, ~30 MB) and searched with dense + keyword scoring.
+- **Nearby care** (`backend/services/facilities.py`): real hospitals, clinics or pharmacies from OpenStreetMap (Overpass), nearest first; emergency departments first for emergencies.
+- **Observability** (`backend/services/observability.py`): every model call (provider, latency, tokens, tool calls, errors, failover) and every finished check is logged; the Ops page reads it live.
 
-# Download latest version
-path = kagglehub.dataset_download("dhivyeshrk/diseases-and-symptoms-dataset")
+There is no confidence percentage. The previous version showed a number drawn from `random.uniform(0.79, 0.89)`; the result page now shows the model's own probability estimate only when the agent made the call, labelled as such.
 
-print("Path to dataset files:", path)
-```
+## Evals
 
-Then copy `Final_Augmented_dataset_Diseases_and_Symptoms.csv` to the project root folder.
-
-### Trained ML Model
-A Random Forest classifier trained on the dataset:
-
-| Metric | Value |
-|---|---|
-| **Model Type** | Random Forest Classifier |
-| **Training Samples** | 197,458 |
-| **Test Samples** | 49,365 |
-| **Top-1 Accuracy** | 68.71% |
-| **Top-3 Accuracy** | 79.01% |
-| **Top-5 Accuracy** | 82.67% |
-
-**Top Predictive Symptoms:**
-1. Cough (2.1%)
-2. Shortness of breath (1.9%)
-3. Sharp abdominal pain (1.5%)
-4. Emotional symptoms (1.5%)
-5. Depressive/psychotic symptoms (1.4%)
-
-### Training the Model
-
-```bash
-cd Health
-python models/disease_classifier.py
-```
-
-**Output files** (saved to `models/models/`):
-- `disease_model.pkl` - Trained Random Forest model
-- `disease_label_encoder.pkl` - Label encoder for diseases
-- `symptom_columns.json` - Feature column names
-- `disease_model_metadata.json` - Training metadata & metrics
-
----
-
-## 🧠 Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Frontend | React 18 + Vite |
-| Backend | FastAPI, Pydantic, Uvicorn |
-| AI/NLP | Google Gemini 2.0 Flash API |
-| ML Model | Random Forest (scikit-learn) |
-| Database | SQLite (aiosqlite) |
-| Sessions | In-memory storage |
-
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Python 3.10+
-- Node.js 18+
-- Google Gemini API Key (get one at https://aistudio.google.com/apikey)
-
-### 1. Setup Backend
+`evals/cases.jsonl` holds 60 written cases, 20 per level, each with a rationale. Cases tagged `red_flag_*` contain textbook warning signs; cases tagged `judgement` are worded without them (for example "can't lift his right arm and his words are all jumbled") to test reasoning rather than keyword rules.
 
 ```bash
 cd backend
-
-# Create virtual environment
-python -m venv ../.venv
-..\.venv\Scripts\Activate.ps1  # Windows
-# source ../.venv/bin/activate  # Linux/Mac
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Optional: install training/offline ML dependencies only when needed
-# pip install -r requirements-training.txt
-
-# Create .env file with your Gemini API key
-echo "GEMINI_API_KEY=your_api_key_here" > .env
-
-# Start the server
-python main.py
-# API runs at http://localhost:8000
+python ../evals/run_eval.py --pipeline rules            # no API key needed
+python ../evals/run_eval.py --pipeline agent            # needs GROQ_API_KEY
+python ../evals/run_eval.py --pipeline agent --base-url https://healthai-triage-api.onrender.com --delay 2
 ```
 
-### 2. Setup Frontend
+The main metric is **missed emergencies** (an emergency told to stay home). Results are written to `evals/results/` and shown on the Evals page.
+
+| Pipeline | Missed emergencies | Emergencies caught | Exact level | Under-triage | Over-triage |
+|---|---|---|---|---|---|
+| Rules only (AI off) | 2 (both `judgement` cases) | 85% (100% of red-flag cases) | 73% | 25% | 2% |
+
+The expected labels were written by the author from public triage guidance and are **not clinically validated**.
+
+CI (`.github/workflows/ci.yml`) runs the unit and API tests and the rules eval on every push, failing if any red-flag emergency is missed. When a `GROQ_API_KEY` secret is set it also runs the agent eval with a stricter gate (no missed emergencies at all, 90% emergency recall).
+
+## Run locally
+
+Requires Python 3.11 and Node 20.
 
 ```bash
-cd frontend
+# backend
+cd backend
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements-dev.txt
+python scripts/fetch_embedder.py          # downloads the 30 MB embedding model once
+echo "GROQ_API_KEY=..." > .env            # optional; without it the rule-based path is used
+uvicorn main:app --reload --port 8000
 
-# Install dependencies
-npm install
-
-# Start dev server
-npm run dev
-# UI runs at http://localhost:5173
+# frontend (proxies /api to :8000)
+cd frontend && npm install && npm run dev
 ```
 
----
+Tests: `cd backend && python -m pytest` (108 tests; the agent is tested with a scripted fake LLM, so no key is needed).
 
-## 📁 Project Structure
+| Variable | Purpose |
+|---|---|
+| `GROQ_API_KEY`, `GROQ_MODEL` | Primary LLM (default `llama-3.3-70b-versatile`) |
+| `NVIDIA_NIM_API_KEY`, `NVIDIA_NIM_MODEL` | Failover LLM |
+| `DATABASE_URL` | Defaults to local SQLite |
+| `SECRET_KEY` | Set a long random value in production |
+| `VITE_API_URL` | Frontend build: backend origin when deployed separately |
+
+## Deploy (Render)
+
+- **API** (web service, Python 3.11): build `pip install -r backend/requirements.txt && python backend/scripts/fetch_embedder.py`, start `cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT`.
+- **Frontend** (static site): build `cd frontend && npm ci && npm run build`, publish `frontend/dist`, env `VITE_API_URL=<api url>`, and a rewrite rule `/*` → `/index.html` for client-side routes.
+
+SQLite and the observability store live on the instance disk, so they reset on each deploy. Results are also kept in the visitor's browser (Your results page).
+
+## Repository
 
 ```
-Health/
-├── Final_Augmented_dataset_Diseases_and_Symptoms.csv  # Medical dataset (246K samples)
-├── backend/
-│   ├── main.py                    # FastAPI entry point
-│   ├── .env                       # GEMINI_API_KEY goes here
-│   ├── api/
-│   │   ├── triage.py              # Core triage pipeline
-│   │   └── hospitals.py           # Hospital recommendations
-│   ├── services/
-│   │   ├── nlp_engine.py          # Gemini-based symptom extraction
-│   │   ├── safety_guardrails.py   # Crisis detection
-│   │   ├── adaptive_engine.py     # Smart follow-up questions
-│   │   ├── risk_classifier.py     # Gemini-based triage classification
-│   │   └── patient_context.py     # Session management
-│   ├── core/                      # Config, logging
-│   ├── db/                        # SQLite database
-│   └── schemas/                   # Pydantic models
-├── frontend/
-│   └── src/
-│       ├── pages/                 # Triage, Result, Landing
-│       ├── components/            # Navbar
-│       └── api/                   # API client
-├── data/
-│   └── symptom_disease_graph.json # Knowledge graph
-└── models/
-    ├── train_classifier.py        # XGBoost triage classifier training
-    ├── disease_classifier.py      # Disease prediction model training
-    └── models/
-        ├── disease_model.pkl              # Trained Random Forest model
-        ├── disease_label_encoder.pkl      # Disease label encoder
-        ├── symptom_columns.json           # 377 symptom feature names
-        ├── disease_model_metadata.json    # Training metrics & config
-        ├── triage_xgb.pkl                 # XGBoost triage model
-        └── feature_columns.json           # Triage feature columns
+backend/
+  api/            triage, facilities, system (status, metrics, evals, knowledge)
+  services/       agent, red_flags, answers, rag, facilities, llm_client, observability, nlp_engine, adaptive_engine
+  tests/          pytest suite (fake LLM transport, no network)
+data/             symptom graph + knowledge base notes
+evals/            cases, harness, published results
+frontend/         React + Vite
+models/           offline Random Forest experiment (not used by the live app)
 ```
 
----
+### Offline ML experiment
 
-## 🔑 Key Features
+`models/train_classifier.py` trains a Random Forest on the Kaggle *Diseases and Symptoms* dataset (246,823 rows, 377 symptom features, 721 diseases): top-1 68.7%, top-3 79.0%, top-5 82.7% on a held-out split (`models/models/disease_model_metadata.json`). The trained model isn't shipped, and the live app doesn't use it.
 
-### Gemini-Powered Intelligence
-- **Symptom Extraction**: Gemini analyzes natural language to identify symptoms
-- **Smart Triage**: AI evaluates symptoms, duration, severity, age, and gender
-- **Adaptive Questions**: Filters out redundant questions based on user input
-- **Location-Aware Hospitals**: Suggests real hospitals based on user location
+Earlier planning notes from the pre-agent version are in `PROJECT_*.md`.
 
-### Safety Features
-- **Crisis Detection**: Identifies mental health emergencies with helpline info
-- **Medical Disclaimers**: Clear warnings that this is not medical advice
+## License
 
-### User Experience
-- Demographics collected upfront (age, gender)
-- Chat-based symptom input
-- Voice input support
-- Progress tracking
-- Confidence scores and explanations
-
----
-
-## 📡 API Endpoints
-
-| Endpoint | Method | Description |
-|---|---|---|
-| `/api/triage/start` | POST | Begin triage session |
-| `/api/triage/answer` | POST | Submit follow-up answer |
-| `/api/triage/result/{id}` | GET | Get completed result |
-| `/api/hospitals/nearby` | GET | Hospital recommendations |
-| `/health` | GET | Health check |
-| `/api/docs` | GET | Swagger UI |
-
----
-
-## 🔧 Configuration
-
-Create `backend/.env` with:
-
-```env
-GEMINI_API_KEY=your_gemini_api_key
-```
-
----
-
-## ▲ Deploy On Vercel
-
-This repository is configured for single-project Vercel deployment (frontend + backend together).
-
-### 1. Import Repository
-
-Import this GitHub repo in Vercel:
-
-- `https://github.com/Asha0509/IOMP_HealthCare.git`
-
-The root `vercel.json` handles:
-
-- FastAPI backend from `backend/main.py`
-- React frontend static build from `frontend/`
-- Route forwarding `/api/*` and `/health` to the backend
-
-### 2. Add Environment Variables In Vercel
-
-Add all of these in **Project Settings → Environment Variables**:
-
-- `APP_NAME`
-- `VERSION`
-- `ENVIRONMENT`
-- `DEBUG`
-- `SECRET_KEY`
-- `ALGORITHM`
-- `ACCESS_TOKEN_EXPIRE_MINUTES`
-- `DATABASE_URL` (recommended on Vercel: `sqlite+aiosqlite:////tmp/health_triage.db`)
-- `USE_MEMORY_SESSION`
-- `REDIS_URL`
-- `SESSION_EXPIRE_SECONDS`
-- `GROQ_API_KEY` (required unless `NVIDIA_NIM_API_KEY` is provided)
-- `GROQ_MODEL`
-- `NVIDIA_NIM_API_KEY` (optional fallback provider)
-- `NVIDIA_NIM_MODEL`
-- `GEMINI_API_KEY` (optional legacy compatibility)
-- `GOOGLE_MAPS_API_KEY` (optional)
-- `SPACY_MODEL`
-- `USE_SCISPACY`
-- `TRIAGE_MODEL_PATH`
-
-You can use these templates as reference:
-
-- `backend/.env.vercel.example`
-- `frontend/.env.vercel.example`
-
-### 3. Redeploy
-
-After adding variables, trigger a new deployment from Vercel dashboard.
-
-
----
-
-## 📝 License
-
-This project is for educational/demo purposes only.
+This project is for educational and demo purposes only.
