@@ -29,9 +29,9 @@ class Settings(BaseSettings):
     GOOGLE_MAPS_API_KEY: str = ""
     GEMINI_API_KEY: str = ""  # Backward compatibility for existing env files
     GROQ_API_KEY: str = ""  # Primary LLM provider key (Groq)
-    GROQ_MODEL: str = "llama-3.3-70b-versatile"
+    GROQ_MODEL: str = "openai/gpt-oss-120b"
     NVIDIA_NIM_API_KEY: str = ""  # Optional fallback LLM provider
-    NVIDIA_NIM_MODEL: str = "meta/llama-3.1-70b-instruct"
+    NVIDIA_NIM_MODEL: str = "openai/gpt-oss-20b"
 
     # Optional decision model (second opinion with conformal prediction sets); off by default.
     # Any server exposing POST {SYSTEMONE_URL}/v1/systemone works (hosted, or an open-weights model served locally).

@@ -344,7 +344,7 @@ Tests: `cd backend && python -m pytest`. Evals: `python evals/run_eval.py --pipe
 
 | Variable | Purpose |
 |---|---|
-| `GROQ_API_KEY`, `GROQ_MODEL` | Primary LLM (default `llama-3.3-70b-versatile`) |
+| `GROQ_API_KEY`, `GROQ_MODEL` | Primary LLM (default `openai/gpt-oss-120b`) |
 | `NVIDIA_NIM_API_KEY`, `NVIDIA_NIM_MODEL` | Failover LLM |
 | `DECISION_MODEL` | `off` (default) or `systemone` |
 | `SYSTEMONE_URL`, `SYSTEMONE_MODEL`, `SYSTEMONE_API_KEY`, `SYSTEMONE_TIMEOUT` | The decision-model endpoint (a local server needs no key) |
