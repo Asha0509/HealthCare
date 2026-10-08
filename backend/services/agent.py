@@ -337,7 +337,7 @@ def assess(case: Case, session_id: Optional[str] = None, source: str = "web", us
             label = sub.get("triage_label") if sub.get("triage_label") in LABELS else "Urgent"
             base = {"triage_label": label,
                     "explanation": str(sub.get("explanation") or "").strip(),
-                    "recommended_action": str(sub.get("recommended_action") or ACTIONS[label]).strip(),
+                    "recommended_action": ACTIONS[label],
                     "key_factors": _clean_list(sub.get("key_factors")),
                     "conditions_to_consider": _clean_list(sub.get("conditions_to_consider")),
                     "self_care": _clean_list(sub.get("self_care"))}

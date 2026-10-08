@@ -76,7 +76,8 @@ For example: "body pains" -> "body_pain", "stomach ache" -> "abdominal_pain", "t
 
 Text: "{text}"
 
-Return ONLY a JSON array like ["fever", "headache"]. No explanation."""
+Only include symptoms the text actually states. Never add a symptom that is not mentioned.
+Return ONLY a JSON array of names from the valid list, or [] if none apply. No explanation."""
 
     try:
         parsed, provider = generate_json_with_fallback(
