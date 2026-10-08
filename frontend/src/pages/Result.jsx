@@ -18,6 +18,29 @@ function Ticks({ items }) {
     )
 }
 
+function SecondOpinion({ opinion }) {
+    if (!opinion) return null
+    const order = ['HomeCare', 'Urgent', 'Emergency']
+    return (
+        <section className="block">
+            <h2>Second opinion from a decision model</h2>
+            {opinion.calibrated ? (
+                <p className="faint" style={{ marginBottom: 10 }}>
+                    Levels this model could not rule out (set to be right at least {Math.round((1 - opinion.alpha) * 100)}% of the time on its calibration cases):{' '}
+                    <strong>{opinion.prediction_set.map((l) => LEVELS[l]?.name || l).join(', ')}</strong>. If it includes a more urgent level than ours, the result is raised, never lowered.
+                </p>
+            ) : (
+                <p className="faint" style={{ marginBottom: 10 }}>Shown for information only: this model has not been calibrated, so it cannot change the result.</p>
+            )}
+            <div className="chips">
+                {order.map((l) => (
+                    <span key={l} className="pill">{LEVELS[l]?.name || l}: {Math.round((opinion.probabilities[l] || 0) * 100)}%</span>
+                ))}
+            </div>
+        </section>
+    )
+}
+
 export default function Result() {
     const { sessionId } = useParams()
     const location = useLocation()
@@ -110,6 +133,8 @@ export default function Result() {
                             <div style={{ marginTop: 16 }}><Ticks items={result.key_factors} /></div>
                         )}
                     </section>
+
+                    <SecondOpinion opinion={result.second_opinion} />
 
                     {result.self_care?.length > 0 && result.triage_label !== 'Emergency' && (
                         <section className="block">

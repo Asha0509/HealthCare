@@ -3,7 +3,6 @@
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
-
 from schemas.models import TriageLabel
 from services import facilities
 

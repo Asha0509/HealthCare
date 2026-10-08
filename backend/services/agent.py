@@ -25,8 +25,10 @@ import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
+from core.config import settings
 from core.logging import app_logger
-from services import adaptive_engine, llm_client, observability, red_flags
+
+from services import adaptive_engine, decision_model, llm_client, observability, red_flags
 from services.rag import retriever
 
 LABELS = ["HomeCare", "Urgent", "Emergency"]
@@ -192,7 +194,7 @@ def run_agent(case: Case, flags: List[red_flags.RedFlag], trace: List[Dict]) -> 
     nudged = False
     last: Optional[llm_client.ChatResult] = None
 
-    for turn in range(MAX_LLM_TURNS):
+    for _turn in range(MAX_LLM_TURNS):
         result = llm_client.chat(messages, tools=tools, temperature=0.1, max_tokens=900)
         llm_calls += 1
         if result is None:
@@ -359,11 +361,29 @@ def assess(case: Case, session_id: Optional[str] = None, source: str = "web", us
             trace.append({"kind": "tool", "name": "search_knowledge", "args": {"query": _short(query, 80)},
                           "summary": ", ".join(c["chunk_id"] for c in citations) or "no matches"})
 
+    # ── Optional decision-model second opinion (escalate-only, needs a calibration) ──
+    opinion = None
+    if not crisis and settings.DECISION_MODEL != "off":
+        opinion = decision_model.second_opinion(case.summary())
+        if opinion:
+            trace.append({"kind": "model", "name": "decision_model",
+                          "summary": (f"set={opinion.prediction_set} at alpha={opinion.alpha}" if opinion.calibrated
+                                      else "uncalibrated, shown for information only")})
+
     # ── Safety merge (escalate-only) ──
     proposed = base["triage_label"]
     final = red_flags.escalate(proposed, flags)
+    if opinion and opinion.prediction_set:
+        raised = decision_model.escalate_with_set(final, opinion.prediction_set)
+        if raised != final:
+            trace.append({"kind": "model", "name": "decision_model_escalation",
+                          "summary": f"prediction set {opinion.prediction_set} raised {final} -> {raised}"})
+            base["recommended_action"] = ACTIONS[raised]
+            base["explanation"] = (f"A second model could not rule out {raised} for this case, so the level is {raised}. "
+                                   + (base["explanation"] or ""))
+            final = raised
     escalated = final != proposed
-    if escalated:
+    if escalated and flags and final == red_flags.escalate(proposed, flags):
         top = max(flags, key=lambda f: red_flags.LEVELS[f.level])
         base["recommended_action"] = ACTIONS[final]
         source = "AI agent" if decision_path == "agent" else "rule-based assessment"
@@ -407,4 +427,5 @@ def assess(case: Case, session_id: Optional[str] = None, source: str = "web", us
         "latency_ms": round(latency),
         "agent_steps": trace,
         "symptoms": case.symptoms,
+        "second_opinion": opinion.to_dict() if opinion else None,
     }

@@ -3,9 +3,8 @@
 import json
 import os
 
-from fastapi import APIRouter, HTTPException, Query
-
 from core.config import settings
+from fastapi import APIRouter, HTTPException, Query
 from services import llm_client, observability
 from services.rag import retriever
 

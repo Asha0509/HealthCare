@@ -1,6 +1,7 @@
 import os
-from pydantic_settings import BaseSettings
 from functools import lru_cache
+
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -32,6 +33,15 @@ class Settings(BaseSettings):
     NVIDIA_NIM_API_KEY: str = ""  # Optional fallback LLM provider
     NVIDIA_NIM_MODEL: str = "meta/llama-3.1-70b-instruct"
 
+    # Optional decision model (second opinion with conformal prediction sets); off by default.
+    # Any server exposing POST {SYSTEMONE_URL}/v1/systemone works (hosted, or an open-weights model served locally).
+    DECISION_MODEL: str = "off"  # off | systemone
+    SYSTEMONE_URL: str = ""
+    SYSTEMONE_API_KEY: str = ""
+    SYSTEMONE_MODEL: str = "typed-decisions"
+    SYSTEMONE_TIMEOUT: float = 20.0
+    CONFORMAL_PATH: str = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models", "conformal.json")
+
     # Data paths - use parent directory since data is at project root
     DATA_DIR: str = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data")
     MODELS_DIR: str = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "models")
@@ -48,7 +58,7 @@ class Settings(BaseSettings):
         case_sensitive = True
 
 
-@lru_cache()
+@lru_cache
 def get_settings() -> Settings:
     return Settings()
 

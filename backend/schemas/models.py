@@ -1,7 +1,7 @@
-from typing import Optional, List
-from pydantic import BaseModel, EmailStr, Field
 from enum import Enum
-import uuid
+from typing import List, Optional
+
+from pydantic import BaseModel, EmailStr, Field
 
 
 # ── Enums ──
@@ -138,6 +138,7 @@ class TriageResult(BaseModel):
     tool_calls: int = 0
     latency_ms: Optional[int] = None
     agent_steps: List[dict] = []
+    second_opinion: Optional[dict] = None
     symptoms: List[str] = []
     chief_complaint: Optional[str] = None
     created_at: Optional[str] = None

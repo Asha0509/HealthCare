@@ -12,21 +12,28 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
+from core.logging import anonymize
+from db.database import AuditLog, TriageResultModel, get_db
+from db.database import Session as SessionModel
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.concurrency import run_in_threadpool
+from schemas.models import (
+    AnswerRequest,
+    AnswerType,
+    AssessRequest,
+    QuestionResponse,
+    TriageResult,
+    TriageSessionState,
+    TriageStartRequest,
+)
+from services import adaptive_engine, nlp_engine, observability, red_flags
+from services import answers as answer_rules
+from services.agent import Case, assess
+from services.patient_context import close_session, create_session_context, get_session_context, update_session_context
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-
-from core.logging import anonymize, app_logger
-from db.database import AuditLog, Session as SessionModel, TriageResultModel, get_db
-from schemas.models import (AnswerRequest, AnswerType, AssessRequest, QuestionResponse, TriageResult,
-                            TriageSessionState, TriageStartRequest)
-from services import adaptive_engine, answers as answer_rules, nlp_engine, observability, red_flags
-from services.agent import Case, assess
-from services.patient_context import (close_session, create_session_context, get_session_context,
-                                      update_session_context)
 
 router = APIRouter(prefix="/api/triage", tags=["Triage"])
 
@@ -92,7 +99,7 @@ async def _finalise(session_id: str, ctx: Dict, db: AsyncSession) -> Dict:
         crisis_response=result["crisis_response"],
         details={k: result[k] for k in ("proposed_label", "escalated", "red_flags", "key_factors", "citations",
                                         "decision_path", "fallback_reason", "provider", "model", "llm_calls",
-                                        "tool_calls", "latency_ms", "agent_steps", "symptoms")},
+                                        "tool_calls", "latency_ms", "agent_steps", "symptoms", "second_opinion")},
     ))
     sess = await db.get(SessionModel, session_id)
     if sess:
@@ -233,6 +240,7 @@ async def get_result(session_id: str, db: AsyncSession = Depends(get_db)):
         tool_calls=d.get("tool_calls", 0),
         latency_ms=d.get("latency_ms"),
         agent_steps=d.get("agent_steps", []),
+        second_opinion=d.get("second_opinion"),
         symptoms=d.get("symptoms", []),
         chief_complaint=sess.chief_complaint if sess else None,
         created_at=row.created_at.isoformat() + "Z" if row.created_at else None,
