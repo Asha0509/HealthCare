@@ -44,6 +44,8 @@ If no model is available, the system falls back to the rule-based assessment and
 
 Taken from the live deployment.
 
+The live app has a **Take the app tour** button (on the landing page and in the top bar). It walks through every page in turn, says what the page is for and lists what is on it, while the page stays visible beside the guide.
+
 ![Landing page](docs/images/landing.png)
 ![Emergency result: warning sign found by the safety rules, the 112 instruction, why this level, sources and how it was decided](docs/images/result-emergency.png)
 ![How well it works: the published eval, every case with expected versus given level](docs/images/evals.png)
@@ -51,57 +53,103 @@ Taken from the live deployment.
 
 ## File structure
 
+One tree, so the nesting is visible. Each line says what the file is for.
+
+```text
+healthcare/
+├── .github/
+│   ├── workflows/                        ci.yml (tests + safety eval gates), quality.yml (vulture, xenon, jscpd), codeql.yml, scorecard.yml
+│   └── dependabot.yml
+├── api/index.py                          Vercel serverless entry that exposes the FastAPI app
+├── render.yaml                           Render blueprint: API + static site, deploy only after checks pass
+├── vercel.json                           Vercel build and rewrite config (alternative host)
+├── ruff.toml                             one lint config for the repo
+├── requirements.txt                      root requirements for the serverless entry
+├── scripts/validate.sh                   one-command validation: lint, tests, safety eval, frontend build
+├── backend/
+│   ├── main.py                           FastAPI app: routers, CORS, startup (database + observability)
+│   ├── api/
+│   │   ├── triage.py                     start, answer, assess, result, history
+│   │   ├── facilities.py                 nearby care for a triage level
+│   │   └── system.py                     status, observability metrics, eval results, knowledge-base listing
+│   ├── services/
+│   │   ├── nlp_engine.py                 symptom extraction from free text (LLM with keyword fallback)
+│   │   ├── adaptive_engine.py            chooses the next follow-up question from the symptom graph
+│   │   ├── answers.py                    validates and normalises typed answers into features
+│   │   ├── patient_context.py            age, sex and history context used when reasoning
+│   │   ├── red_flags.py                  deterministic emergency rules; can only raise a level
+│   │   ├── agent.py                      tool-calling triage loop, rule-based fallback and the safety merge
+│   │   ├── rag.py                        hybrid retrieval (dense + keyword) over data/knowledge
+│   │   ├── llm_client.py                 shared OpenAI-compatible client with provider failover
+│   │   ├── decision_model.py             optional second opinion plus split conformal prediction sets
+│   │   ├── facilities.py                 Overpass queries for hospitals, clinics, pharmacies
+│   │   └── observability.py              SQLite store for every model call and every finished check
+│   ├── schemas/models.py                 Pydantic request and response models
+│   ├── core/                             config (env settings), logging, security helpers
+│   ├── db/                               database setup; schema.sql (Postgres) and schema_sqlite.sql
+│   ├── scripts/fetch_embedder.py         downloads the 30 MB embedding model at build time
+│   └── tests/                            133 tests, fake LLM transport, no network
+├── data/
+│   ├── symptom_disease_graph.json        symptom graph used for lookup and follow-up questions
+│   └── knowledge/                        23 short notes, one per symptom or emergency topic, each linked to MedlinePlus
+├── evals/
+│   ├── cases.jsonl                       written cases with a rationale each
+│   ├── run_eval.py                       eval harness with safety gates (rules or agent pipeline)
+│   ├── decision_eval.py                  calibrates and evaluates the optional decision model
+│   └── results/                          published eval output shown on the Evals page
+├── frontend/src/
+│   ├── App.jsx, main.jsx, index.css      routes and global styles
+│   ├── pages/
+│   │   ├── Landing.jsx                   intro
+│   │   ├── Triage.jsx                    intake + questions
+│   │   ├── Result.jsx                    level, reasons, steps, care
+│   │   ├── History.jsx                   past results
+│   │   ├── Evals.jsx                     published eval
+│   │   └── Ops.jsx                       model-call dashboard
+│   ├── components/
+│   │   ├── Tour.jsx                      app tour: what is on every page
+│   │   ├── TriageTag.jsx
+│   │   ├── IntakeFields.jsx
+│   │   ├── AnswerInput.jsx               a control per question type
+│   │   ├── AgentTrace.jsx
+│   │   ├── Citations.jsx
+│   │   ├── Facilities.jsx
+│   │   ├── Navbar.jsx
+│   │   └── Footer.jsx
+│   ├── api/client.js                     API client
+│   └── lib/
+│       ├── history.js                    browser-only history
+│       └── labels.js                     level names and meaning
+├── docs/images/                          screenshots used in this README
+├── models/                               offline Random Forest experiment on a public dataset; not used by the live app
+└── PROJECT_*.md                          planning notes from the pre-agent version
 ```
-.github/workflows/   ci.yml (tests + safety eval gates), quality.yml (vulture, xenon, jscpd), codeql.yml, scorecard.yml; dependabot.yml
-api/index.py         Vercel serverless entry that exposes the FastAPI app
-render.yaml          Render blueprint: API + static site, deploy only after checks pass
-vercel.json          Vercel build and rewrite config (alternative host)
-ruff.toml            One lint config for the repo
-scripts/validate.sh  One-command validation: lint, tests, safety eval, frontend build
-requirements.txt     Root requirements for the serverless entry
 
-backend/
-  main.py            FastAPI app: routers, CORS, startup (database + observability)
-  api/
-    triage.py        Triage endpoints: start, answer, assess, result, history
-    facilities.py    Nearby care for a triage level
-    system.py        Status, observability metrics, eval results, knowledge-base listing
-  services/
-    nlp_engine.py        Symptom extraction from free text (LLM with keyword fallback)
-    adaptive_engine.py   Chooses the next follow-up question from the symptom graph
-    answers.py           Validates and normalises typed answers into features
-    patient_context.py   Age, sex and history context used when reasoning
-    red_flags.py         Deterministic emergency rules; can only raise a level
-    agent.py             Tool-calling triage loop, rule-based fallback and the safety merge
-    rag.py               Hybrid retrieval (dense + keyword) over data/knowledge
-    llm_client.py        Shared OpenAI-compatible client with provider failover
-    decision_model.py    Optional second opinion plus split conformal prediction sets
-    facilities.py        Overpass queries for hospitals, clinics, pharmacies
-    observability.py     SQLite store for every model call and every finished check
-  schemas/models.py      Pydantic request and response models
-  core/                  config (env settings), logging, security helpers
-  db/                    database setup; schema.sql (Postgres) and schema_sqlite.sql
-  scripts/fetch_embedder.py   Downloads the 30 MB embedding model at build time
-  tests/                 133 tests, fake LLM transport, no network (agent, rules, RAG, answers, API, decision model, facilities, observability, NLP)
+### How the files connect
 
-data/
-  symptom_disease_graph.json   Symptom graph used for lookup and follow-up questions
-  knowledge/                   23 short notes, one per symptom or emergency topic, each linked to MedlinePlus
+Arrows mean "imports" or "calls". Everything the agent knows comes through
+`services/`; the safety rules in `red_flags.py` run before and after the model.
 
-evals/
-  cases.jsonl        60 written cases (20 per level) with a rationale each
-  run_eval.py        Eval harness with safety gates (rules or agent pipeline)
-  decision_eval.py   Calibrates and evaluates the optional decision model
-  results/           Published eval output shown on the Evals page
-
-frontend/src/
-  App.jsx, main.jsx, index.css     Routes and global styles
-  pages/    Landing (intro), Triage (intake + questions), Result (level, reasons, steps, care), History (past results), Evals, Ops
-  components/  TriageTag, IntakeFields, AnswerInput (a control per question type), AgentTrace, Citations, Facilities, Navbar, Footer
-  api/client.js, lib/history.js (browser-only history), lib/labels.js (level names and meaning)
-
-models/   Offline Random Forest experiment on a public disease dataset; not used by the live app
-PROJECT_*.md   Planning notes from the pre-agent version
+```mermaid
+flowchart LR
+  ui[frontend pages] --> client[api/client.js] --> triage[api/triage.py]
+  triage --> nlp[nlp_engine]
+  triage --> adaptive[adaptive_engine]
+  triage --> rules[red_flags]
+  triage --> agent
+  nlp --> llm[llm_client]
+  agent --> llm
+  agent --> rag
+  agent --> rules
+  agent --> dm[decision_model]
+  agent --> obs[observability]
+  llm --> obs
+  rag --> kb[("data/knowledge")]
+  adaptive --> sgraph[("symptom_disease_graph.json")]
+  obs --> sqlite[("SQLite")]
+  system[api/system.py] --> obs
+  system --> results[("evals/results")]
+  ui --> system
 ```
 
 ## User flow
