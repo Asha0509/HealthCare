@@ -46,6 +46,8 @@ Taken from the live deployment.
 
 The live app has a **Take the app tour** button (on the landing page and in the top bar). It walks through every page in turn, says what the page is for and lists what is on it, while the page stays visible beside the guide.
 
+![App tour: a docked guide that says what each page is for while the page stays visible](docs/images/app-tour.png)
+
 ![Landing page](docs/images/landing.png)
 ![Emergency result: warning sign found by the safety rules, the 112 instruction, why this level, sources and how it was decided](docs/images/result-emergency.png)
 ![How well it works: the published eval, every case with expected versus given level](docs/images/evals.png)
