@@ -5,7 +5,7 @@ prometheus-client==0.20.0
 langdetect==1.0.9
 
 # NLP / ML training and offline analysis
-spacy==3.7.4
+spacy==3.8.16
 scispacy==0.5.5
 transformers==4.37.2
 torch==2.2.0
