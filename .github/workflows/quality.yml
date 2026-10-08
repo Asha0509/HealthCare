@@ -1,0 +1,31 @@
+name: Code quality
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install vulture xenon radon
+      - name: Dead code
+        run: vulture backend evals --min-confidence 80 --exclude "backend/tests,backend/models_cache" --ignore-names base_urgency,max_fever_temp_c
+      - name: Complexity report (advisory)
+        run: |
+          radon cc backend evals -s -n C --exclude "backend/tests/*,backend/models_cache/*" || true
+      - name: Complexity gate (nothing above D except the known orchestrator)
+        run: xenon --max-absolute F --max-modules D --max-average B backend evals -e "backend/tests/*,backend/models_cache/*"
+  duplication:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Copy-paste detection
+        run: npx --yes jscpd@4 --min-lines 14 --threshold 10 --ignore "**/node_modules/**,**/tests/**,**/data/**,**/*.json,**/models_cache/**,**/dist/**" backend evals frontend/src
