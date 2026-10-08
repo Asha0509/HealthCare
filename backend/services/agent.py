@@ -218,7 +218,8 @@ def run_agent(case: Case, flags: List[red_flags.RedFlag], trace: List[Dict]) -> 
         for tc in result.tool_calls:
             tool_calls += 1
             if tc["name"] == "submit_assessment":
-                trace.append({"kind": "tool", "name": "submit_assessment", "args": tc["arguments"],
+                shown = {k: v for k, v in tc["arguments"].items() if k != "recommended_action"}  # ignored; fixed table is used
+                trace.append({"kind": "tool", "name": "submit_assessment", "args": shown,
                               "summary": f"label={tc['arguments'].get('triage_label')}"})
                 return {"submission": tc["arguments"], "retrieved": retrieved, "llm_calls": llm_calls,
                         "tool_calls": tool_calls, "provider": result.provider, "model": result.model}
