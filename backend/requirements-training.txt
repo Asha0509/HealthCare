@@ -6,7 +6,7 @@ langdetect==1.0.9
 
 # NLP / ML training and offline analysis
 spacy==3.7.4
-scispacy==0.5.5
+scispacy==0.6.2
 transformers==4.37.2
 torch==2.2.0
 sentencepiece==0.1.99
