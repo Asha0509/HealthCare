@@ -178,6 +178,12 @@ Why conformal: it gives a coverage guarantee that does not rely on the model bei
 
 The API and the static site are deployed from `main` on Render. Tests use a scripted fake LLM transport, so CI never calls a model unless a key secret is set.
 
+### Validate and deploy
+
+`scripts/validate.sh` runs the whole pipeline in order and prints a pass/fail line per stage: lint, unit and API tests, the safety eval (gated on missed emergencies), the agent eval when `GROQ_API_KEY` is set, and the frontend build. These are the checks CI runs, so a green local run predicts a green build.
+
+`render.yaml` is a Render blueprint with `autoDeployTrigger: checksPass`: a push to `main` deploys only after the GitHub checks pass. Secrets are declared with `sync: false` and entered in the Render dashboard, never committed.
+
 ## Run it
 
 Requires Python 3.11 and Node 20.
