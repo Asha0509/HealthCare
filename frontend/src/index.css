@@ -351,3 +351,21 @@ tr.miss td { background: #fdf6f5; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* App tour: a docked card that walks through every page while the page stays visible. */
+.tour {
+    position: fixed; right: 16px; bottom: 16px; z-index: 50;
+    width: min(390px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto;
+    background: var(--spruce-2); color: #fff; border-radius: var(--r-md);
+    padding: 16px 18px; box-shadow: 0 10px 30px rgba(27, 42, 38, 0.35);
+}
+.tour-head { display: flex; justify-content: space-between; align-items: center; font-size: var(--t-xs); color: #c9d9d4; text-transform: uppercase; letter-spacing: 0.06em; }
+.tour-x { background: none; border: 0; color: #fff; font-size: 1.5rem; line-height: 1; cursor: pointer; }
+.tour h2 { margin: 6px 0 4px; font-size: var(--t-lg); color: #fff; }
+.tour-what { margin: 0 0 10px; font-size: var(--t-sm); line-height: 1.45; }
+.tour ul { margin: 0 0 14px; padding-left: 18px; font-size: var(--t-sm); line-height: 1.45; color: #e3efec; }
+.tour li { margin-bottom: 6px; }
+.tour-nav { display: flex; justify-content: space-between; gap: 8px; }
+.tour .btn-ghost { color: #fff; border-color: rgba(255,255,255,0.5); background: transparent; }
+.tour .btn-primary { background: #fff; color: var(--spruce-2); border-color: #fff; }
+.tour-launch { background: none; border: 1px solid var(--line); border-radius: var(--r-sm); padding: 6px 12px; font: inherit; font-size: var(--t-sm); color: var(--spruce); cursor: pointer; }

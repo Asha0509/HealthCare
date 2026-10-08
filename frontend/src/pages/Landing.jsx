@@ -50,6 +50,7 @@ export default function Landing() {
                             {error && <p className="error-text" role="alert" style={{ marginTop: 10 }}>{error}</p>}
                             <div className="row" style={{ marginTop: 16 }}>
                                 <button className="btn btn-primary" type="submit">Check my symptoms</button>
+                                <Link className="btn btn-ghost" to="/?tour=1">Take the app tour</Link>
                                 <span className="faint">Takes about a minute. No sign-up.</span>
                             </div>
                         </form>

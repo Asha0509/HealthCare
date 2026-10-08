@@ -1,5 +1,6 @@
-import { lazy, Suspense } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { lazy, Suspense, useState } from 'react'
+import { Navigate, Route, Routes, useSearchParams } from 'react-router-dom'
+import Tour from './components/Tour'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Landing from './pages/Landing'
@@ -12,10 +13,16 @@ const Evals = lazy(() => import('./pages/Evals'))
 const Ops = lazy(() => import('./pages/Ops'))
 
 export default function App() {
+    const [params, setParams] = useSearchParams()
+    const [tour, setTour] = useState(params.get('tour') === '1')
+    const closeTour = () => {
+        setTour(false)
+        if (params.has('tour')) setParams({}, { replace: true })
+    }
     return (
         <div className="app">
             <a className="skip-link" href="#main">Skip to content</a>
-            <Navbar />
+            <Navbar onTour={() => setTour(true)} />
             <main id="main">
                 <Suspense fallback={<div className="wrap section faint">Loading…</div>}>
                 <Routes>
@@ -30,6 +37,7 @@ export default function App() {
                 </Suspense>
             </main>
             <Footer />
+            <Tour open={tour} onClose={closeTour} />
         </div>
     )
 }

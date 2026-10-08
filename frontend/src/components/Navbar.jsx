@@ -20,7 +20,7 @@ const LINKS = [
     ['/ops', 'Ops'],
 ]
 
-export default function Navbar() {
+export default function Navbar({ onTour }) {
     const [open, setOpen] = useState(false)
     const { pathname } = useLocation()
     useEffect(() => setOpen(false), [pathname])
@@ -45,6 +45,7 @@ export default function Navbar() {
                         {LINKS.map(([to, label]) => (
                             <NavLink key={to} to={to} className={({ isActive }) => (isActive ? 'active' : '')}>{label}</NavLink>
                         ))}
+                        <button className="tour-launch" onClick={() => { setOpen(false); onTour() }}>App tour</button>
                     </div>
                 </div>
             </nav>
