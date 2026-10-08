@@ -11,9 +11,9 @@
 
 > Portfolio project, not a medical device. It can be wrong. In an emergency, call 112.
 
-**Contents:** [Problem](#the-problem) · [Results](#results) · [Architecture](#architecture) · [User flow](#user-flow) · [How a case is decided](#how-a-case-is-decided) · [The second opinion](#the-second-opinion-an-optional-decision-model) · [Tools](#tools-and-why) · [CI/CD](#engineering-quality-and-cicd) · [Run it](#run-it) · [Limits](#limits)
+**Contents:** [Problem](#problem-statement) · [Solution](#solution) · [File structure](#file-structure) · [User flow](#user-flow) · [LLD](#low-level-design-lld) · [HLD](#high-level-design-hld) · [Scaling](#how-it-would-scale) · [USP](#usp-what-is-different-and-why-it-is-better) · [Tools](#tools-and-software-used) · [Principles](#principles-used) · [Requirements](#functional-and-non-functional-requirements) · [Results](#results) · [CI/CD](#engineering-quality-and-cicd) · [Run it](#run-it) · [Limits](#limits)
 
-## The problem
+## Problem statement
 
 Someone with chest tightness at 2 a.m. has three options: search the web and read a list of frightening possibilities, wait until morning, or go to the hospital. Symptom checkers promise to help, but most fail in one of two ways:
 
@@ -26,72 +26,73 @@ The product requirement is therefore narrow and strict:
 2. **Show the reasoning and the sources**, so the answer can be checked rather than trusted.
 3. **Say plainly when the AI isn't involved.** If no model is available the system falls back to rules and says so; it never invents a confidence number.
 
-## Results
+## Solution
 
-All numbers come from 60 hand-written cases (20 per level) in `evals/cases.jsonl`, run with `evals/run_eval.py`, and are re-run in CI. The labels were written by the author from public triage guidance and are **not clinically validated**. Sixty cases is enough to catch regressions and compare designs, not to claim clinical accuracy.
+HealthAI triage turns a free-text complaint into one of three levels with the reasoning attached.
 
-| Pipeline | Missed emergencies | Emergencies caught | Exact level | Under-triage | Over-triage |
-|---|---|---|---|---|---|
-| Rules only (no AI) | 2 (both `judgement` cases) | 85% (100% of red-flag cases) | 73% | 25% | 2% |
+1. **Understand.** The complaint, age and sex are parsed into symptoms (LLM, with a keyword fallback).
+2. **Check the floor first.** Deterministic red-flag rules scan the text. A textbook emergency sign (stroke, heart attack, anaphylaxis and so on) sets the level immediately; a self-harm crisis skips the AI and shows helplines.
+3. **Ask only what matters.** Up to six typed follow-up questions (yes/no, 1-10, duration, choice) are chosen from the symptom graph, and the answers are validated.
+4. **Reason with tools.** A tool-calling agent looks up the symptom graph, searches a curated knowledge base (RAG over MedlinePlus-linked notes) and re-checks the red flags before it submits a structured assessment.
+5. **Optionally get a second opinion.** A decision model (hosted or local) can return level probabilities; a conformal prediction set turns them into a set of levels the model cannot rule out, and the case is raised if that set holds a more urgent level.
+6. **Merge safely.** The final level is the highest of the agent, the second opinion and the red-flag rules. Nothing can lower a level.
+7. **Show everything.** The result gives the level, reasons, citations that were actually retrieved, every agent step, and real nearby hospitals or clinics from OpenStreetMap. Every model call and finished check is logged for the Ops page.
 
-The two misses are cases worded without textbook warning signs ("can't lift his right arm and his words are all jumbled"). Catching those is the job of the agent, which is why the agent eval gates on zero missed emergencies.
+If no model is available, the system falls back to the rule-based assessment and says so on screen. It never invents a confidence number.
 
-The agent (LLM) pipeline is evaluated with `run_eval.py --pipeline agent` and gated in CI when a model key is configured (no missed emergencies, 90% emergency recall). Those numbers are added to the Evals page once the key runs in the deployed environment; none are claimed here until they are measured.
+## File structure
 
-**What did not work, reported rather than hidden:**
-
-- **Rules alone miss judgement cases.** Two of 20 emergencies are told to stay home without the agent. This is the gap the agent exists to close, and the reason the agent eval is gated.
-- **The optional decision model has not been evaluated in this repository.** The code, the conformal procedure and tests exist (see below), but no model endpoint was run against the 60 cases here, so no accuracy or coverage figure is claimed. Earlier experiments with a small distilled student found it too weak to use on its own; that work is not part of this code.
-- The earlier version showed a confidence percentage drawn from `random.uniform(0.79, 0.89)`. It was removed; the page now shows a probability only when a model produced one, labelled as such.
-
-## Architecture
-
-### High-level design
-
-```mermaid
-flowchart LR
-    U[Browser<br/>React + Vite] -->|/api| API[FastAPI service]
-    API --> RULES[Red-flag rules<br/>deterministic]
-    API --> AGENT[Triage agent<br/>tool-calling loop]
-    AGENT --> LLM1[Groq<br/>Llama 3.3 70B]
-    AGENT -. failover .-> LLM2[NVIDIA NIM<br/>Llama 3.1 70B]
-    AGENT --> KB[(Knowledge base<br/>model2vec + keyword)]
-    API -. optional .-> DM[Decision model<br/>any /v1/systemone endpoint]
-    API --> OSM[OpenStreetMap<br/>Overpass]
-    API --> OBS[(Observability store<br/>SQLite)]
-    API --> DB[(SQLite)]
-    CI[GitHub Actions] -->|push to main| R[Render<br/>API + static site]
 ```
+.github/workflows/   ci.yml (tests + safety eval gates), quality.yml (vulture, xenon, jscpd), codeql.yml, scorecard.yml; dependabot.yml
+api/index.py         Vercel serverless entry that exposes the FastAPI app
+render.yaml          Render blueprint: API + static site, deploy only after checks pass
+vercel.json          Vercel build and rewrite config (alternative host)
+ruff.toml            One lint config for the repo
+scripts/validate.sh  One-command validation: lint, tests, safety eval, frontend build
+requirements.txt     Root requirements for the serverless entry
 
-### Low-level design
+backend/
+  main.py            FastAPI app: routers, CORS, startup (database + observability)
+  api/
+    triage.py        Triage endpoints: start, answer, assess, result, history
+    facilities.py    Nearby care for a triage level
+    system.py        Status, observability metrics, eval results, knowledge-base listing
+  services/
+    nlp_engine.py        Symptom extraction from free text (LLM with keyword fallback)
+    adaptive_engine.py   Chooses the next follow-up question from the symptom graph
+    answers.py           Validates and normalises typed answers into features
+    patient_context.py   Age, sex and history context used when reasoning
+    red_flags.py         Deterministic emergency rules; can only raise a level
+    agent.py             Tool-calling triage loop, rule-based fallback and the safety merge
+    rag.py               Hybrid retrieval (dense + keyword) over data/knowledge
+    llm_client.py        Shared OpenAI-compatible client with provider failover
+    decision_model.py    Optional second opinion plus split conformal prediction sets
+    facilities.py        Overpass queries for hospitals, clinics, pharmacies
+    observability.py     SQLite store for every model call and every finished check
+  schemas/models.py      Pydantic request and response models
+  core/                  config (env settings), logging, security helpers
+  db/                    database setup; schema.sql (Postgres) and schema_sqlite.sql
+  scripts/fetch_embedder.py   Downloads the 30 MB embedding model at build time
+  tests/                 133 tests, fake LLM transport, no network (agent, rules, RAG, answers, API, decision model, facilities, observability, NLP)
 
-```mermaid
-flowchart TD
-    subgraph api[backend/api]
-        T[triage.py<br/>build_case, assess]
-        F[facilities.py]
-        S[system.py<br/>status, metrics, evals]
-    end
-    subgraph svc[backend/services]
-        NLP[nlp_engine<br/>symptom extraction]
-        AE[adaptive_engine<br/>follow-up questions]
-        ANS[answers<br/>typed answers to features]
-        RF[red_flags<br/>rules, escalate-only]
-        AG[agent<br/>loop + safety merge]
-        RAG[rag<br/>retrieval]
-        DMS[decision_model<br/>optional, probabilities + conformal set]
-        LC[llm_client<br/>providers, failover]
-        OB[observability]
-    end
-    T --> NLP --> AE --> ANS --> AG
-    AG --> LC
-    AG --> RAG
-    AG --> RF
-    AG --> DMS
-    AG --> OB
-    LC --> OB
-    F --> OSM[(Overpass)]
-    DMS --> ST[(conformal.json<br/>calibration)]
+data/
+  symptom_disease_graph.json   Symptom graph used for lookup and follow-up questions
+  knowledge/                   23 short notes, one per symptom or emergency topic, each linked to MedlinePlus
+
+evals/
+  cases.jsonl        60 written cases (20 per level) with a rationale each
+  run_eval.py        Eval harness with safety gates (rules or agent pipeline)
+  decision_eval.py   Calibrates and evaluates the optional decision model
+  results/           Published eval output shown on the Evals page
+
+frontend/src/
+  App.jsx, main.jsx, index.css     Routes and global styles
+  pages/    Landing (intro), Triage (intake + questions), Result (level, reasons, steps, care), History (past results), Evals, Ops
+  components/  TriageTag, IntakeFields, AnswerInput (a control per question type), AgentTrace, Citations, Facilities, Navbar, Footer
+  api/client.js, lib/history.js (browser-only history), lib/labels.js (level names and meaning)
+
+models/   Offline Random Forest experiment on a public disease dataset; not used by the live app
+PROJECT_*.md   Planning notes from the pre-agent version
 ```
 
 ## User flow
@@ -127,7 +128,42 @@ sequenceDiagram
     end
 ```
 
-## How a case is decided
+**Explanation.** The person types a complaint and basic details. The red-flag rules run before any model, so an emergency or a self-harm crisis is answered at once. Otherwise the app asks a few typed questions, the agent reasons with tools, and the optional second opinion can only raise the level. A final safety merge takes the maximum of all signals, then the app fetches nearby care for that level. The history of results stays in the browser.
+
+## Low-level design (LLD)
+
+```mermaid
+flowchart TD
+    subgraph api[backend/api]
+        T[triage.py<br/>build_case, assess]
+        F[facilities.py]
+        S[system.py<br/>status, metrics, evals]
+    end
+    subgraph svc[backend/services]
+        NLP[nlp_engine<br/>symptom extraction]
+        AE[adaptive_engine<br/>follow-up questions]
+        ANS[answers<br/>typed answers to features]
+        RF[red_flags<br/>rules, escalate-only]
+        AG[agent<br/>loop + safety merge]
+        RAG[rag<br/>retrieval]
+        DMS[decision_model<br/>optional, probabilities + conformal set]
+        LC[llm_client<br/>providers, failover]
+        OB[observability]
+    end
+    T --> NLP --> AE --> ANS --> AG
+    AG --> LC
+    AG --> RAG
+    AG --> RF
+    AG --> DMS
+    AG --> OB
+    LC --> OB
+    F --> OSM[(Overpass)]
+    DMS --> ST[(conformal.json<br/>calibration)]
+```
+
+**Explanation.** `api/triage.py` is thin: it builds the case and calls services in a fixed order. `nlp_engine` extracts symptoms, `adaptive_engine` picks questions, and `answers` converts typed replies into features. `agent` owns the tool loop and the final merge; it calls `llm_client` (providers and failover), `rag` (knowledge search), `red_flags` (the floor) and, optionally, `decision_model`. `observability` records every model call and run. Every model-dependent piece has a non-model fallback, so a failure reduces detail, not safety.
+
+### How a case is decided
 
 - **Red-flag rules** (`backend/services/red_flags.py`): regex rules for stroke (FAST), heart attack, breathing difficulty, anaphylaxis, meningitis, heavy bleeding, overdose, pregnancy bleeding, self-harm and more, plus answer-based rules ("chest pain, then sweating: yes"). They ignore negated symptoms ("no chest pain") and **can only raise a level.** A self-harm crisis skips the AI and shows helplines.
 - **Agent** (`backend/services/agent.py`): an OpenAI-compatible tool-calling loop. Tools: `lookup_symptom`, `search_knowledge`, `check_red_flags`, and a final `submit_assessment`. Citations the agent did not actually retrieve are dropped. If no provider is configured or the agent fails, a rule-based assessment is used and the reason is shown.
@@ -136,7 +172,7 @@ sequenceDiagram
 - **Nearby care** (`backend/services/facilities.py`): real facilities from OpenStreetMap, emergency departments first for emergencies.
 - **Observability** (`backend/services/observability.py`): every model call (provider, latency, tokens, tool calls, errors, failover) and every finished check is logged; the Ops page reads it live.
 
-## The second opinion: an optional decision model
+### The second opinion: an optional decision model
 
 Off by default (`DECISION_MODEL=off`). When switched on, a separate model returns a probability for each of the three levels for the same case. A **split conformal prediction** step turns that into a set of levels that contains the right one with probability at least 1 - alpha (on exchangeable cases). If the set contains a more urgent level than the current answer, the result is raised to it. It is never lowered.
 
@@ -147,8 +183,53 @@ Off by default (`DECISION_MODEL=off`). When switched on, a separate model return
 - **Skipped for self-harm crises**, which go straight to helplines.
 
 Why conformal: it gives a coverage guarantee that does not rely on the model being well calibrated. With 60 calibration cases the quantile is coarse, so treat it as a demonstration of the method.
+## High-level design (HLD)
 
-## Tools and why
+```mermaid
+flowchart LR
+    U[Browser<br/>React + Vite] -->|/api| API[FastAPI service]
+    API --> RULES[Red-flag rules<br/>deterministic]
+    API --> AGENT[Triage agent<br/>tool-calling loop]
+    AGENT --> LLM1[Groq<br/>Llama 3.3 70B]
+    AGENT -. failover .-> LLM2[NVIDIA NIM<br/>Llama 3.1 70B]
+    AGENT --> KB[(Knowledge base<br/>model2vec + keyword)]
+    API -. optional .-> DM[Decision model<br/>any /v1/systemone endpoint]
+    API --> OSM[OpenStreetMap<br/>Overpass]
+    API --> OBS[(Observability store<br/>SQLite)]
+    API --> DB[(SQLite)]
+    CI[GitHub Actions] -->|push to main| R[Render<br/>API + static site]
+```
+
+**Explanation.** A React single-page app talks to one stateless FastAPI service. The service owns the deterministic rules, the agent, the knowledge base and the optional decision model, and reaches out to two LLM providers (with failover), OpenStreetMap, and SQLite for app data and observability. Pushes to `main` pass GitHub Actions and then deploy to Render.
+
+## How it would scale
+
+| Concern | Today | Next step |
+|---|---|---|
+| API | One stateless FastAPI instance | Run N instances behind a load balancer; nothing in the process is shared except SQLite |
+| Storage | SQLite on the instance disk (resets on deploy) | Postgres (`schema.sql` is already written); keep observability in a separate store |
+| Model calls | Synchronous with provider failover | A queue and per-provider rate limiting; response caching for repeated complaints; a third provider |
+| Retrieval | 24 notes, in-memory embeddings | A vector store once the knowledge base grows past a few thousand passages; scheduled content review |
+| Nearby care | Live Overpass query per request | Cache by area; fall back to a second place source |
+| Quality | 60 author-written cases | A larger set labelled by clinicians, re-run on every change, with the decision model calibrated on it |
+| Observability | SQLite plus an Ops page | Export traces and metrics to a standard collector and alert on missed-emergency and error-rate changes |
+| Reach | English | Multilingual intake and local emergency numbers per region |
+
+## USP: what is different and why it is better
+
+| Feature | What most symptom checkers do | What this does |
+|---|---|---|
+| Safety | Let the model decide, or show a score | Deterministic red-flag rules sit under everything and can only raise a level. A model mistake cannot talk the system out of an emergency |
+| Honesty about confidence | A percentage with nothing behind it (the earlier version of this project did too) | No made-up number. A probability appears only when a model produced it, labelled as such; the optional second opinion uses conformal sets with a stated error rate |
+| Explainability | A level and nothing else | Reasons, citations the agent actually retrieved (others are dropped), and every agent step on the result page |
+| Missing AI | Break or guess | Falls back to rules and says so on screen |
+| Evidence of quality | Marketing claims | A 60-case eval with missed emergencies as the headline metric, gated in CI, and a "what did not work" section |
+| Real-world next step | Advice only | Nearest real hospitals, clinics or pharmacies, emergency departments first for emergencies |
+| Operations | A black box | An Ops page with latency, tokens, tool calls, errors and failover for every model call |
+| Privacy | Account required | No account; past results stay in the visitor's browser |
+| Vendor lock-in | One model | Two LLM providers with failover, and a vendor-neutral decision-model endpoint (`/v1/systemone`) that can be hosted or local |
+
+## Tools and software used
 
 | Tool | What it does here | Why this and not something else |
 |---|---|---|
@@ -165,6 +246,64 @@ Why conformal: it gives a coverage guarantee that does not rely on the model bei
 | pytest, ruff, vulture, jscpd | Tests, lint, dead code, duplication | Fast feedback; one config per repo |
 | GitHub Actions, CodeQL, Scorecard, Dependabot | CI/CD and supply-chain checks | Everything is checked on every push |
 | Render | Hosting | Deploys the API and static site straight from the repo |
+
+## Principles used
+
+* **Safety first, escalate only.** Every safety layer (rules, agent merge, second opinion) can raise a level and none can lower it.
+* **Deterministic where it must be right, models where judgement helps.** Emergency rules are plain regex; the LLM handles language and borderline reasoning.
+* **Fail soft.** Provider failure, timeouts and bad JSON degrade to the rule-based path with a visible reason.
+* **Show the work.** Reasons, retrieved sources and agent steps are part of the response, not hidden logs.
+* **No claim without a measurement.** Numbers come from the eval harness; unmeasured things (agent accuracy, decision-model coverage) are stated as unmeasured.
+* **Separation of concerns.** Thin API layer, single-purpose services, typed schemas, config only in `core/config.py`.
+* **Test without the network.** A scripted fake LLM transport makes agent behaviour reproducible in CI.
+* **Least data.** No accounts; history is local to the browser; secrets only in environment settings.
+
+## Functional and non-functional requirements
+
+**Functional**
+
+| Requirement | How it is implemented |
+|---|---|
+| Accept a free-text complaint with age and sex | `IntakeFields` + `POST /triage/start` (or `/triage/assess` for a single call), validated by Pydantic |
+| Detect emergencies immediately | `red_flags.py` regex rules, negation-aware, run before any model |
+| Ask relevant follow-ups | `adaptive_engine` over the symptom graph; `answers.py` validates typed answers |
+| Produce a three-level result with reasons and sources | `agent.py` tool loop with RAG; unretrieved citations dropped |
+| Work without an AI provider | Rule-based assessment fallback with the reason shown |
+| Find care nearby | `facilities.py` against OpenStreetMap, emergency departments first |
+| Keep a history of results | Browser-local `lib/history.js` (the server also keeps session records) |
+| Publish quality evidence | `evals/` harness, Evals page |
+
+**Non-functional**
+
+| Quality | Target | How it is implemented and checked |
+|---|---|---|
+| Safety | No missed red-flag emergency | Escalate-only merge; CI fails on any missed red-flag emergency; agent eval gates on zero missed emergencies when a key is set |
+| Reliability | Survives provider failure | Groq to NVIDIA NIM failover, rule-based fallback, silent failure of the optional second opinion |
+| Observability | Every model call traceable | `observability.py` stores provider, latency, tokens, tool calls, errors and failover; Ops page |
+| Testability | Reproducible without network | 133 tests with a fake LLM transport; conformal maths tested directly |
+| Maintainability | Small, clean code | ruff (lint), vulture (dead code), xenon/radon (complexity), jscpd (copy-paste) on every push. `assess()` in `agent.py` is the known long function. A Ponytail minimal-code review pass is planned and has not been run on this repo yet |
+| Security | No secrets in code, known-issue scanning | Keys in environment only; CodeQL, OpenSSF Scorecard, Dependabot |
+| Performance | Fits a small server | numpy-only embeddings (~30 MB, no PyTorch); no heavy model in the API process |
+| Privacy | No account | Results are kept in the browser; the server stores only the case record (no account, no name) |
+| Portability | Runs anywhere Python 3.11 and Node 20 do | Render blueprint, Vercel config, local `uvicorn` |
+
+## Results
+
+All numbers come from 60 hand-written cases (20 per level) in `evals/cases.jsonl`, run with `evals/run_eval.py`, and are re-run in CI. The labels were written by the author from public triage guidance and are **not clinically validated**. Sixty cases is enough to catch regressions and compare designs, not to claim clinical accuracy.
+
+| Pipeline | Missed emergencies | Emergencies caught | Exact level | Under-triage | Over-triage |
+|---|---|---|---|---|---|
+| Rules only (no AI) | 2 (both `judgement` cases) | 85% (100% of red-flag cases) | 73% | 25% | 2% |
+
+The two misses are cases worded without textbook warning signs ("can't lift his right arm and his words are all jumbled"). Catching those is the job of the agent, which is why the agent eval gates on zero missed emergencies.
+
+The agent (LLM) pipeline is evaluated with `run_eval.py --pipeline agent` and gated in CI when a model key is configured (no missed emergencies, 90% emergency recall). Those numbers are added to the Evals page once the key runs in the deployed environment; none are claimed here until they are measured.
+
+**What did not work, reported rather than hidden:**
+
+- **Rules alone miss judgement cases.** Two of 20 emergencies are told to stay home without the agent. This is the gap the agent exists to close, and the reason the agent eval is gated.
+- **The optional decision model has not been evaluated in this repository.** The code, the conformal procedure and tests exist (see below), but no model endpoint was run against the 60 cases here, so no accuracy or coverage figure is claimed. Earlier experiments with a small distilled student found it too weak to use on its own; that work is not part of this code.
+- The earlier version showed a confidence percentage drawn from `random.uniform(0.79, 0.89)`. It was removed; the page now shows a probability only when a model produced one, labelled as such.
 
 ## Engineering quality and CI/CD
 
@@ -222,22 +361,6 @@ Keys live in `.env` locally and in the host's environment settings when deployed
 - The agent pipeline has not been scored in this repository yet; its numbers appear on the Evals page once a model key runs the eval.
 - The decision model is optional and unevaluated here; see "What did not work".
 - SQLite and the observability store live on the instance disk, so they reset on each deploy. Results are also kept in the visitor's browser (Your results page).
-
-## Repository
-
-```
-backend/
-  api/            triage, facilities, system (status, metrics, evals, knowledge)
-  services/       agent, red_flags, decision_model, answers, rag, facilities, llm_client, observability, nlp_engine, adaptive_engine
-  scripts/        fetch_embedder
-  tests/          pytest suite (fake LLM transport, no network)
-data/             symptom graph + knowledge base notes
-evals/            cases, harness, decision-model calibration, published results
-frontend/         React + Vite
-models/           offline Random Forest experiment (not used by the live app)
-```
-
-The offline experiment (`models/train_classifier.py`, Random Forest on the Kaggle *Diseases and Symptoms* dataset: top-1 68.7%, top-3 79.0%) is not shipped. Earlier planning notes from the pre-agent version are in `PROJECT_*.md`.
 
 ## License
 
