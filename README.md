@@ -90,7 +90,7 @@ healthcare/
 │   ├── core/                             config (env settings), logging, security helpers
 │   ├── db/                               database setup; schema.sql (Postgres) and schema_sqlite.sql
 │   ├── scripts/fetch_embedder.py         downloads the 30 MB embedding model at build time
-│   └── tests/                            133 tests, fake LLM transport, no network
+│   └── tests/                            135 tests, fake LLM transport, no network
 ├── data/
 │   ├── symptom_disease_graph.json        symptom graph used for lookup and follow-up questions
 │   └── knowledge/                        23 short notes, one per symptom or emergency topic, each linked to MedlinePlus
@@ -122,9 +122,8 @@ healthcare/
 │   └── lib/
 │       ├── history.js                    browser-only history
 │       └── labels.js                     level names and meaning
-├── docs/images/                          screenshots used in this README
-├── models/                               offline Random Forest experiment on a public dataset; not used by the live app
-└── PROJECT_*.md                          planning notes from the pre-agent version
+├── docs/                                 PROJECT_*.md planning notes from the pre-agent version; images/ holds the README screenshots
+└── models/                               offline Random Forest experiment on a public dataset; not used by the live app
 ```
 
 ### How the files connect
@@ -339,7 +338,7 @@ flowchart LR
 | Safety | No missed red-flag emergency | Escalate-only merge; CI fails on any missed red-flag emergency; agent eval gates on zero missed emergencies when a key is set |
 | Reliability | Survives provider failure | Groq to NVIDIA NIM failover, rule-based fallback, silent failure of the optional second opinion |
 | Observability | Every model call traceable | `observability.py` stores provider, latency, tokens, tool calls, errors and failover; Ops page |
-| Testability | Reproducible without network | 133 tests with a fake LLM transport; conformal maths tested directly |
+| Testability | Reproducible without network | 135 tests with a fake LLM transport; conformal maths tested directly |
 | Maintainability | Small, clean code | ruff (lint), vulture (dead code), xenon/radon (complexity), jscpd (copy-paste) on every push. `assess()` in `agent.py` is the known long function. A Ponytail minimal-code review pass is planned and has not been run on this repo yet |
 | Security | No secrets in code, known-issue scanning | Keys in environment only; CodeQL, OpenSSF Scorecard, Dependabot |
 | Performance | Fits a small server | numpy-only embeddings (~30 MB, no PyTorch); no heavy model in the API process |
@@ -368,7 +367,7 @@ The agent (LLM) pipeline is evaluated with `run_eval.py --pipeline agent` and ga
 
 | Workflow | Runs | Gate |
 |---|---|---|
-| `ci.yml` | ruff, backend tests (133), rules eval, front-end build; agent eval when a model key secret exists | Fails on any missed red-flag emergency; the agent eval additionally requires zero missed emergencies and 90% emergency recall. Eval metrics are written to the run summary |
+| `ci.yml` | ruff, backend tests (135), rules eval, front-end build; agent eval when a model key secret exists | Fails on any missed red-flag emergency; the agent eval additionally requires zero missed emergencies and 90% emergency recall. Eval metrics are written to the run summary |
 | `quality.yml` | vulture, complexity report and gate (radon/xenon), copy-paste detection (jscpd) | Dead code and extreme complexity fail the build. `assess()` in `agent.py` is the one long orchestrator and is flagged for splitting |
 | `codeql.yml` | CodeQL for Python and JavaScript | Weekly and on every push |
 | `scorecard.yml` | OpenSSF Scorecard | Weekly |
