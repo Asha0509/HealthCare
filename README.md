@@ -40,6 +40,15 @@ HealthAI triage turns a free-text complaint into one of three levels with the re
 
 If no model is available, the system falls back to the rule-based assessment and says so on screen. It never invents a confidence number.
 
+## Screenshots
+
+Taken from the live deployment.
+
+![Landing page](docs/images/landing.png)
+![Emergency result: warning sign found by the safety rules, the 112 instruction, why this level, sources and how it was decided](docs/images/result-emergency.png)
+![How well it works: the published eval, every case with expected versus given level](docs/images/evals.png)
+![Ops dashboard: every model call and finished check with latency and fallbacks](docs/images/ops.png)
+
 ## File structure
 
 ```
