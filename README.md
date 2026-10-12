@@ -11,7 +11,7 @@
 
 > Portfolio project, not a medical device. It can be wrong. In an emergency, call 112.
 
-**Contents:** [Problem](#problem-statement) · [Solution](#solution) · [File structure](#file-structure) · [User flow](#user-flow) · [LLD](#low-level-design-lld) · [HLD](#high-level-design-hld) · [Scaling](#how-it-would-scale) · [USP](#usp-what-is-different-and-why-it-is-better) · [Tools](#tools-and-software-used) · [Principles](#principles-used) · [Requirements](#functional-and-non-functional-requirements) · [Results](#results) · [CI/CD](#engineering-quality-and-cicd) · [Run it](#run-it) · [Limits](#limits)
+**Contents:** [Problem](#problem-statement) · [Solution](#solution) · [File structure](#file-structure) · [User flow](#user-flow) · [LLD](#low-level-design-lld) · [HLD](#high-level-design-hld) · [Scaling](#how-it-would-scale) · [USP](#usp-what-is-different-and-why-it-is-better) · [Tools](#tools-and-software-used) · [Principles](#principles-used) · [Requirements](#functional-and-non-functional-requirements) · [Results](#results) · [CI/CD](#engineering-quality-and-cicd) · [Run it](#run-it) · [Limits](#limits) · [Design docs](#design-docs)
 
 ## Problem statement
 
@@ -32,7 +32,7 @@ HealthAI triage turns a free-text complaint into one of three levels with the re
 
 1. **Understand.** The complaint, age and sex are parsed into symptoms (LLM, with a keyword fallback).
 2. **Check the floor first.** Deterministic red-flag rules scan the text. A textbook emergency sign (stroke, heart attack, anaphylaxis and so on) sets the level immediately; a self-harm crisis skips the AI and shows helplines.
-3. **Ask only what matters.** Up to six typed follow-up questions (yes/no, 1-10, duration, choice) are chosen from the symptom graph, and the answers are validated.
+3. **Ask only what matters.** Up to six typed follow-up questions (yes/no, 1-10, duration, choice) are chosen from the symptom graph (a model may drop ones that look redundant; the safety rules still read every answer), and the answers are validated.
 4. **Reason with tools.** A tool-calling agent looks up the symptom graph, searches a curated knowledge base (RAG over MedlinePlus-linked notes) and re-checks the red flags before it submits a structured assessment.
 5. **Optionally get a second opinion.** A decision model (hosted or local) can return level probabilities; a conformal prediction set turns them into a set of levels the model cannot rule out, and the case is raised if that set holds a more urgent level.
 6. **Merge safely.** The final level is the highest of the agent, the second opinion and the red-flag rules. Nothing can lower a level.
@@ -122,8 +122,15 @@ healthcare/
 │   └── lib/
 │       ├── history.js                    browser-only history
 │       └── labels.js                     level names and meaning
-├── docs/                                 PROJECT_*.md planning notes from the pre-agent version; images/ holds the README screenshots
-└── models/                               offline Random Forest experiment on a public dataset; not used by the live app
+├── docs/
+│   ├── architecture.md                   system architecture: request flow, failover, observability, frontend, deployment
+│   ├── LLD.md                            low-level design: modules, signatures, schemas, tests
+│   ├── HLD.md                            high-level design: goals, AI vs deterministic boundary, safety, trade-offs
+│   ├── results.md                        what the 60-case eval measured, setup first, what did not work
+│   ├── errorlog.md                       real errors and fixes: date, cause, fix, lesson
+│   ├── PROJECT_*.md                      planning notes from the pre-agent version (historical, not current)
+│   └── images/                           README screenshots
+└── models/                               offline Random Forest and XGBoost experiments; not used by the live app
 ```
 
 ### How the files connect
@@ -248,8 +255,8 @@ flowchart LR
     U[Browser<br/>React + Vite] -->|/api| API[FastAPI service]
     API --> RULES[Red-flag rules<br/>deterministic]
     API --> AGENT[Triage agent<br/>tool-calling loop]
-    AGENT --> LLM1[Groq<br/>Llama 3.3 70B]
-    AGENT -. failover .-> LLM2[NVIDIA NIM<br/>Llama 3.1 70B]
+    AGENT --> LLM1[Groq<br/>gpt-oss-120b]
+    AGENT -. failover .-> LLM2[NVIDIA NIM<br/>gpt-oss-20b]
     AGENT --> KB[(Knowledge base<br/>model2vec + keyword)]
     API -. optional .-> DM[Decision model<br/>any /v1/systemone endpoint]
     API --> OSM[OpenStreetMap<br/>Overpass]
@@ -264,10 +271,10 @@ flowchart LR
 
 | Concern | Today | Next step |
 |---|---|---|
-| API | One stateless FastAPI instance | Run N instances behind a load balancer; nothing in the process is shared except SQLite |
+| API | One stateless FastAPI instance | Move in-progress session context to Redis (`USE_MEMORY_SESSION=false`), then run N instances behind a load balancer; today sessions live in process memory, so one instance |
 | Storage | SQLite on the instance disk (resets on deploy) | Postgres (`schema.sql` is already written); keep observability in a separate store |
 | Model calls | Synchronous with provider failover | A queue and per-provider rate limiting; response caching for repeated complaints; a third provider |
-| Retrieval | 24 notes, in-memory embeddings | A vector store once the knowledge base grows past a few thousand passages; scheduled content review |
+| Retrieval | 23 notes (62 chunks), in-memory embeddings | A vector store once the knowledge base grows past a few thousand passages; scheduled content review |
 | Nearby care | Live Overpass query per request | Cache by area; fall back to a second place source |
 | Quality | 60 author-written cases | A larger set labelled by clinicians, re-run on every change, with the decision model calibrated on it |
 | Observability | SQLite plus an Ops page | Export traces and metrics to a standard collector and alert on missed-emergency and error-rate changes |
@@ -293,8 +300,8 @@ flowchart LR
 |---|---|---|
 | FastAPI, Pydantic | API and request/response schemas | Typed validation at the edge; automatic API docs |
 | React, Vite | Front end | Small, fast build; no server rendering needed |
-| Groq (Llama 3.3 70B) | Agent model | Fast, free tier; supports tool calling through an OpenAI-compatible API |
-| NVIDIA NIM (Llama 3.1 70B) | Failover model | A second provider so one outage doesn't stop the agent |
+| Groq (`openai/gpt-oss-120b`) | Agent model | Fast, free tier; supports tool calling through an OpenAI-compatible API |
+| NVIDIA NIM (`openai/gpt-oss-20b`) | Failover model | A second provider so one outage doesn't stop the agent |
 | Deterministic regex rules | Red flags | A safety floor that cannot hallucinate and can be read line by line |
 | model2vec `potion-base-8M` | Embeddings for retrieval | numpy only, ~30 MB, no PyTorch, so it fits a small server |
 | Conformal prediction | Coverage-guaranteed label sets | Distribution-free guarantee; a few lines of plain Python |
@@ -351,9 +358,9 @@ All numbers come from 60 hand-written cases (20 per level) in `evals/cases.jsonl
 
 | Pipeline | Missed emergencies | Emergencies caught | Exact level | Under-triage | Over-triage |
 |---|---|---|---|---|---|
-| Rules only (no AI) | 2 (both `judgement` cases) | 85% (100% of red-flag cases) | 73% | 25% | 2% |
+| Rules only (no AI) | 2 (both `judgement` cases) | 85% (17 of 20; 100% of red-flag cases) | 73% | 25% | 2% |
 
-The two misses are cases worded without textbook warning signs ("can't lift his right arm and his words are all jumbled"). Catching those is the job of the agent, which is why the agent eval gates on zero missed emergencies.
+The two misses are cases worded without textbook warning signs ("can't lift his right arm and his words are all jumbled"). A third emergency ("tearing pain in my chest that goes through to my back") is told Urgent rather than Emergency, which lowers recall to 85% without being a missed emergency. Catching these is the job of the agent, which is why the agent eval gates on zero missed emergencies. Rules alone also tell 12 of 20 Urgent cases to stay at home. The full write-up, with the setup stated first, is in [docs/results.md](docs/results.md).
 
 The agent (LLM) pipeline is evaluated with `run_eval.py --pipeline agent` and gated in CI when a model key is configured (no missed emergencies, 90% emergency recall). Those numbers are added to the Evals page once the key runs in the deployed environment; none are claimed here until they are measured.
 
@@ -371,7 +378,7 @@ The agent (LLM) pipeline is evaluated with `run_eval.py --pipeline agent` and ga
 | `quality.yml` | vulture, complexity report and gate (radon/xenon), copy-paste detection (jscpd) | Dead code and extreme complexity fail the build. `assess()` in `agent.py` is the one long orchestrator and is flagged for splitting |
 | `codeql.yml` | CodeQL for Python and JavaScript | Weekly and on every push |
 | `scorecard.yml` | OpenSSF Scorecard | Weekly |
-| Dependabot | pip, npm and Actions updates | Weekly pull requests |
+| Dependabot | pip, npm and Actions updates | Monthly, grouped pull requests |
 
 The API and the static site are deployed from `main` on Render. Tests use a scripted fake LLM transport, so CI never calls a model unless a key secret is set.
 
@@ -407,6 +414,8 @@ Tests: `cd backend && python -m pytest`. Evals: `python evals/run_eval.py --pipe
 | `DECISION_MODEL` | `off` (default) or `systemone` |
 | `SYSTEMONE_URL`, `SYSTEMONE_MODEL`, `SYSTEMONE_API_KEY`, `SYSTEMONE_TIMEOUT` | The decision-model endpoint (a local server needs no key) |
 | `CONFORMAL_PATH` | Calibration file; defaults to `backend/models/conformal.json` |
+| `CORS_ORIGINS` | Comma-separated allowed browser origins (default `http://localhost:5173,https://healthai-triage.onrender.com`); credentials are off |
+| `USE_MEMORY_SESSION`, `REDIS_URL` | In-progress session state: in memory (default) or Redis |
 | `DATABASE_URL` | Defaults to local SQLite |
 | `SECRET_KEY` | Set a long random value in production |
 | `VITE_API_URL` | Front end build: backend origin when deployed separately |
@@ -419,6 +428,18 @@ Keys live in `.env` locally and in the host's environment settings when deployed
 - The agent pipeline has not been scored in this repository yet; its numbers appear on the Evals page once a model key runs the eval.
 - The decision model is optional and unevaluated here; see "What did not work".
 - SQLite and the observability store live on the instance disk, so they reset on each deploy. Results are also kept in the visitor's browser (Your results page).
+
+## Design docs
+
+Five documents describe the system as it exists now. The `PROJECT_*.md` files in `docs/` are older planning notes from the pre-agent version and are not current.
+
+| Document | What it covers |
+|---|---|
+| [docs/architecture.md](docs/architecture.md) | Request flow, safety merge, provider failover, observability, frontend pages, deployment on Render (Mermaid diagrams) |
+| [docs/LLD.md](docs/LLD.md) | Detailed low-level design: modules, key functions, algorithms, schemas, tables, error handling, test strategy |
+| [docs/HLD.md](docs/HLD.md) | Detailed high-level design: goals and non-goals, AI versus deterministic boundary, why escalate-only, trade-offs, rejected alternatives |
+| [docs/results.md](docs/results.md) | What the 60-case eval measured, setup before numbers, what did not work, limitations |
+| [docs/errorlog.md](docs/errorlog.md) | Real errors and fixes with date, cause, fix and lesson |
 
 ## License
 
